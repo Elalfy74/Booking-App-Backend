@@ -1,0 +1,6 @@
+{
+    "tokenKey":"jsonWebTokenkey",
+    "refreshTokenKey":"anyotherKey",
+    "db":"mongodb://localhost:27017/booking-app",
+    "port":8000
+}
