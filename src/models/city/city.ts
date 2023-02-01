@@ -9,18 +9,15 @@ const citySchema = new Schema<ICity>(
     },
 
     country: {
-      type: String,
+      type: Schema.Types.ObjectId,
+      ref: "Country",
       required: true,
     },
 
-    photo: {
-      type: String,
+    photos: {
+      type: [String],
+      minlength: 1,
       required: true,
-    },
-
-    numberOfHotels: {
-      type: Number,
-      default: 0,
     },
 
     isFeatured: {
