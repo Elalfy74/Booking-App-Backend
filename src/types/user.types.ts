@@ -27,6 +27,7 @@ export interface IUser {
 export interface IUserMethods {
   generateToken(): string;
   generateRefreshToken(): string;
+  generateCookiesToken(): string;
 }
 
 export interface UserModel extends Model<IUser, {}, IUserMethods> {

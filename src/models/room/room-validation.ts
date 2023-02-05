@@ -1,10 +1,10 @@
 import Joi from "joi";
 
-export const newRoomSchema = Joi.object({
-  category: Joi.string().required(),
-  number: Joi.number().min(1).required(),
+export const addRoomSchema = Joi.object({
+  title: Joi.string().required(),
   maxPeople: Joi.number().min(1).required(),
+  beds: Joi.number().min(1).required(),
   desc: Joi.string().min(4).max(200).required(),
   currentPrice: Joi.number().min(1).required(),
-  photos: Joi.array().items(Joi.string()).min(1).required(),
+  photos: Joi.array().items(Joi.string()).required(),
 });

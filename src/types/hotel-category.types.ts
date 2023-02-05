@@ -1,11 +1,8 @@
 export interface IHotelCategory {
   name: string;
   desc: string;
-  createdAt: Date;
-  updatedAt: Date;
 }
 
-export type AddHotelCategoryBody = {
-  name: string;
-  desc: string;
-};
+export type AddHotelCategoryBody = IHotelCategory;
+
+export type UpdateHotelCategoryBody = Partial<AddHotelCategoryBody>;

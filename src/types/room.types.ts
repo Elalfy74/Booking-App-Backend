@@ -1,13 +1,11 @@
 import { Schema } from "mongoose";
 
 export interface IRoom {
-  category: Schema.Types.ObjectId;
-  number: number;
+  title: string;
+  // category: Schema.Types.ObjectId;
   maxPeople: number;
+  beds: number;
   desc: string;
   currentPrice: number;
-  unavailableDates: { type: [Date] };
-  photos: [string];
-  createdAt: Date;
-  updatedAt: Date;
+  photos: string[];
 }

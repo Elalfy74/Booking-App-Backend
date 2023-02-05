@@ -1,30 +1,35 @@
 import { RequestHandler } from "express";
-import createHttpError from "http-errors";
+
+import { ERRORS, ENTITES, MESSAGES } from "../utils/utils";
+
 import City from "../models/city/city";
 import { AddCityBody, updateCityBody } from "../types/city.types";
 
+const MAX_FEATURED_CITIES = 6;
+
+const CITY = {
+  NOT_FOUND: ERRORS.NOT_FOUND(ENTITES.CITY),
+  MAX: ERRORS.MAX(ENTITES.CITY),
+  CREATED: MESSAGES.CREATED(ENTITES.CITY),
+  UPDATED: MESSAGES.UPDATED(ENTITES.CITY),
+  DELETED: MESSAGES.DELETED(ENTITES.CITY),
+};
+
 // @desc    Retrive All cities
 // @route   GET /api/cities
-// @access  ADMIN //TODO
-export const getAllCitiesOrFeatured: RequestHandler = async (
-  req,
-  res,
-  next
-) => {
-  const { featured, country } = req.query;
+// @access  PUBLIC
+export const getCities: RequestHandler = async (req, res, next) => {
+  const { findFilter, sort = { name: 1 }, startIndex = 0, limit = 10 } = req;
+  const { withCountry } = req.query;
 
-  let cities;
-  let isFeaturedFilter = {};
+  const country =
+    withCountry && typeof withCountry === "string" ? "country" : "";
 
-  if (featured === "true") isFeaturedFilter = { isFeatured: true };
-
-  if (country === "true") {
-    cities = await City.find(isFeaturedFilter).populate("country");
-  } else {
-    cities = await City.find(isFeaturedFilter);
-  }
-  res.setHeader("Content-Range", "30");
-  res.setHeader("Access-Control-Expose-Headers", "Content-Range");
+  const cities = await City.find(findFilter)
+    .populate(country)
+    .limit(limit)
+    .skip(startIndex)
+    .sort(sort);
 
   res.status(200).send(cities);
 };
@@ -37,61 +42,72 @@ export const getCity: RequestHandler = async (req, res, next) => {
 
   const city = await City.findById(id);
 
-  if (!city) throw createHttpError.NotFound("City Not Found");
+  if (!city) return next(CITY.NOT_FOUND);
 
   res.status(200).send(city);
 };
 
 // @desc    Add New City
 // @route   POST /api/cities
-// @access  ADMIN //TODO
+// @access  ADMIN
 export const addCity: RequestHandler = async (req, res, next) => {
-  const { name, country, photos, isFeatured }: AddCityBody = req.body;
+  const body: AddCityBody = req.body;
 
-  const newCity = new City({
-    name,
-    country,
-    photos,
-    isFeatured,
-  });
+  if (body.isFeatured) {
+    const featuredCount = await City.count({
+      isFeatured: true,
+    });
+
+    if (featuredCount === MAX_FEATURED_CITIES) return next(CITY.MAX);
+  }
+
+  const newCity = new City(body);
 
   const savedCity = await newCity.save();
 
   res.status(201).send({
-    message: "Successfully added City",
+    message: CITY.CREATED,
     city: savedCity,
   });
 };
 
 // @desc    Update City
 // @route   PATCH /api/citis/:id
-// @access  ADMIN //TODO
+// @access  ADMIN
 export const updateCity: RequestHandler = async (req, res, next) => {
   const { id } = req.params;
-  const newCity: updateCityBody = req.body;
+  const body: updateCityBody = req.body;
 
-  const city = await City.findByIdAndUpdate(id, newCity);
+  if (body.isFeatured) {
+    const featuredCount = await City.count({
+      isFeatured: true,
+    });
 
-  if (!city) throw createHttpError.NotFound("City Not Found");
+    if (featuredCount === MAX_FEATURED_CITIES) return next(CITY.MAX);
+  }
+
+  const city = await City.findByIdAndUpdate(id, body);
+
+  if (!city) return next(CITY.NOT_FOUND);
 
   res.status(200).send({
-    message: "City Updated Successfully",
+    message: CITY.UPDATED,
     city,
   });
 };
 
 // @desc    Delete City
 // @route   PUT /api/cities/:id
-// @access  ADMIN //TODO
+// @access  ADMIN
 export const deleteCity: RequestHandler = async (req, res, next) => {
   const { id } = req.params;
 
   const city = await City.findByIdAndRemove({ _id: id });
 
-  if (!city) createHttpError.NotFound("City Not Found");
+  if (!city) return next(CITY.NOT_FOUND);
 
   res.status(200).send({
-    message: "City deleted Successfully",
+    message: CITY.DELETED,
     city,
   });
 };

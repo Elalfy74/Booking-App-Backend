@@ -1,6 +1,12 @@
 import Joi from "joi";
+import { COMMON_SCHEMA } from "../../utils/joi-common";
 
 export const addHotelCategorySchema = Joi.object({
-  name: Joi.string().min(2).max(50).required(),
-  desc: Joi.string().min(4).max(200).required(),
+  name: COMMON_SCHEMA.name.required(),
+  desc: COMMON_SCHEMA.desc.required(),
+});
+
+export const updateHotelCategorySchema = Joi.object({
+  name: COMMON_SCHEMA.name,
+  desc: COMMON_SCHEMA.desc,
 });

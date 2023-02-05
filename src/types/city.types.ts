@@ -5,8 +5,6 @@ export interface ICity {
   country: Schema.Types.ObjectId;
   photos: string[];
   isFeatured: boolean;
-  createdAt: Date;
-  updatedAt: Date;
 }
 
 export type AddCityBody = {

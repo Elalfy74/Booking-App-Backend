@@ -1,22 +1,18 @@
 import Joi from "joi";
-
-const commonSchema = {
-  name: Joi.string().min(2).max(50),
-  country: Joi.string().min(2).max(100),
-  photos: Joi.array().min(1),
-  isFeatured: Joi.boolean(),
-};
+import { IsValidId } from "../../utils/utils";
 
 export const addCitySchema = Joi.object({
-  name: commonSchema.name.required(),
-  country: commonSchema.country.required(),
-  photos: commonSchema.photos.required(),
-  isFeatured: commonSchema.isFeatured,
+  name: Joi.string().min(2).max(50).required(),
+  country: IsValidId.required(),
+  photos: Joi.array().items(Joi.string()).min(1).required(),
+  isFeatured: Joi.boolean(),
 });
 
-export const updateCitySchema = Joi.object({
-  name: commonSchema.name,
-  country: commonSchema.country,
-  photos: commonSchema.photos,
-  isFeatured: commonSchema.isFeatured,
-});
+export const updateCitySchema = Joi.object()
+  .keys({
+    name: Joi.string().min(2).max(50),
+    country: IsValidId,
+    photos: Joi.array().items(Joi.string()).min(1),
+    isFeatured: Joi.boolean(),
+  })
+  .min(1);

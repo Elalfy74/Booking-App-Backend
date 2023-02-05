@@ -2,6 +2,7 @@ import { model, Schema } from "mongoose";
 import { hash } from "bcryptjs";
 import config from "config";
 import { sign } from "jsonwebtoken";
+import { serialize } from "cookie";
 import createError from "http-errors";
 
 import {
@@ -69,6 +70,23 @@ userSchema.methods.generateRefreshToken = function () {
       expiresIn: "1y",
     }
   );
+};
+
+userSchema.methods.generateCookiesToken = function () {
+  const token = sign(
+    { userId: this._id, isAdmin: this.isAdmin },
+    config.get("tokenKey")
+    // {
+    //   expiresIn: "1h",
+    // }
+  );
+
+  return serialize("JWT_TOKEN", token, {
+    httpOnly: true,
+    maxAge: 60 * 60 * 24 * 30,
+    sameSite: "strict",
+    path: "/",
+  });
 };
 
 userSchema.statics.signupUser = async function (user: SignupBody) {

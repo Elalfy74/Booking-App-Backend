@@ -1,11 +1,25 @@
 import { RequestHandler } from "express";
-import createHttpError from "http-errors";
+import { HttpError } from "http-errors";
+
+import { ENTITES, ERRORS, MESSAGES } from "../utils/utils";
+
 import RoomCategory from "../models/room-category/room-category";
-import { AddRoomCategoryBody } from "../types/room-category.types";
+import {
+  AddRoomCategoryBody,
+  UpdateRoomCategoryBody,
+} from "../types/room-category.types";
+
+const ROOM_CATEGORY = {
+  NOT_FOUND: ERRORS.NOT_FOUND(ENTITES.ROOM_CATEGORY),
+  DUPLICATION: ERRORS.DUPLICATION(ENTITES.ROOM_CATEGORY, "Name"),
+  CREATED: MESSAGES.CREATED(ENTITES.ROOM_CATEGORY),
+  UPDATED: MESSAGES.UPDATED(ENTITES.ROOM_CATEGORY),
+  DELETED: MESSAGES.DELETED(ENTITES.ROOM_CATEGORY),
+};
 
 // @desc    Retrive All Room Categories
 // @route   GET /api/room-categories
-// @access  ADMIN //TODO
+// @access  ADMIN
 export const getAllRoomCategories: RequestHandler = async (req, res, next) => {
   const roomCategories = await RoomCategory.find();
 
@@ -21,45 +35,90 @@ export const getAllRoomCategories: RequestHandler = async (req, res, next) => {
 export const getRoomCategory: RequestHandler = async (req, res, next) => {
   const { id } = req.params;
 
-  const roomCategory = await RoomCategory.findById(id);
+  try {
+    const roomCategory = await RoomCategory.findById(id);
 
-  if (!roomCategory) throw createHttpError.NotFound("Room Category Not Found");
+    if (!roomCategory) return next(ROOM_CATEGORY.NOT_FOUND);
 
-  res.status(200).send(roomCategory);
+    res.status(200).send(roomCategory);
+  } catch (err) {
+    next(ROOM_CATEGORY.NOT_FOUND);
+  }
 };
 
 // @desc    Add New Room Category
 // @route   POST /api/room-categories
-// @access  ADMIN //TODO
+// @access  ADMIN
 export const addRoomCategory: RequestHandler = async (req, res, next) => {
-  const { name, desc, noOfBeds }: AddRoomCategoryBody = req.body;
+  const { name }: AddRoomCategoryBody = req.body;
 
-  const roomCategory = new RoomCategory({
+  const roomCategory = await RoomCategory.findOne({
     name,
-    desc,
-    noOfBeds,
   });
 
-  const savedRoomCategory = await roomCategory.save();
+  if (roomCategory) return next(ROOM_CATEGORY.DUPLICATION);
+
+  const newRoomCategory = new RoomCategory({ name });
+
+  const savedRoomCategory = await newRoomCategory.save();
 
   res.status(201).send({
-    message: "Successfully added Room Category",
+    message: ROOM_CATEGORY.CREATED,
     roomCategory: savedRoomCategory,
   });
 };
 
+// @desc    Update Room Category
+// @route   PATCH /api/room-categories/:id
+// @access  ADMIN
+export const updateRoomCategory: RequestHandler = async (req, res, next) => {
+  const { id } = req.params;
+  const { name }: UpdateRoomCategoryBody = req.body;
+
+  try {
+    const roomCategory = await RoomCategory.findByIdAndUpdate(
+      id,
+      { name },
+      { new: true }
+    );
+
+    if (!roomCategory) {
+      return next(ROOM_CATEGORY.NOT_FOUND);
+    }
+
+    res.status(200).send({
+      message: ROOM_CATEGORY.UPDATED,
+      roomCategory,
+    });
+  } catch (err) {
+    const { code } = err as HttpError;
+
+    // Duplication Value
+    if (code === 11000) {
+      return next(ROOM_CATEGORY.DUPLICATION);
+    }
+    next(ROOM_CATEGORY.NOT_FOUND);
+  }
+};
+
 // @desc    Delete Room Category
-// @route   PUT /api/room-categories/:id
-// @access  ADMIN //TODO
+// @route   DELETE /api/room-categories/:id
+// @access  ADMIN
 export const deleteRoomCategory: RequestHandler = async (req, res, next) => {
   const { id } = req.params;
 
-  const roomCategory = await RoomCategory.findByIdAndRemove({ _id: id });
+  try {
+    const roomCategory = await RoomCategory.findByIdAndRemove(id);
 
-  if (!roomCategory) createHttpError.NotFound("Room Category Not Found");
+    // VALID ID BUT NOT FOUND
+    if (!roomCategory) return next(ROOM_CATEGORY.NOT_FOUND);
 
-  res.status(200).send({
-    message: "Room Category deleted Successfully",
-    roomCategory,
-  });
+    res.status(200).send({
+      message: ROOM_CATEGORY.DELETED,
+      roomCategory,
+    });
+  } catch (err) {
+    // NOT VALID ID
+    next(ROOM_CATEGORY.NOT_FOUND);
+  }
 };

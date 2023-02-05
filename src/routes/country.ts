@@ -1,7 +1,17 @@
 import { Router } from "express";
-import * as countryController from "../controllers/country";
-import validator from "../middlewares/validator";
+
+import { getQuerySchema } from "../utils/utils";
+import {
+  filter,
+  isAdmin,
+  isAuth,
+  pagination,
+  sort,
+  validator,
+} from "../middlewares";
+
 import Country from "../models/country/country";
+import * as countryController from "../controllers/country";
 import {
   addCountrySchema,
   updateCountrySchema,
@@ -11,7 +21,11 @@ const router = Router();
 
 // GET
 // api/countries
-router.get("/", countryController.getAllCountriesOrFeatured);
+router.get(
+  "/",
+  [validator(null, getQuerySchema), filter, pagination(Country), sort],
+  countryController.getCountries
+);
 
 // GET
 // api/countries/:id
@@ -19,18 +33,22 @@ router.get("/:id", countryController.getCountry);
 
 // POST
 // api/countries
-router.post("/", validator(addCountrySchema), countryController.addCountry);
+router.post(
+  "/",
+  [isAuth, isAdmin, validator(addCountrySchema)],
+  countryController.addCountry
+);
 
 // PATCH
 // api/countries/:id
 router.patch(
   "/:id",
-  validator(updateCountrySchema),
+  [isAuth, isAdmin, validator(updateCountrySchema)],
   countryController.updateCountry
 );
 
 // DELETE
 // api/countries/:id
-router.delete("/:id", countryController.deleteCountry);
+router.delete("/:id", [isAuth, isAdmin], countryController.deleteCountry);
 
 export default router;

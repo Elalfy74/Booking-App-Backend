@@ -6,6 +6,12 @@ declare global {
     export interface Request {
       userId?: string;
       isAdmin?: boolean;
+      findFilter?: FindFilter;
+      startIndex?: number;
+      limit?: number;
+      sort?: {
+        [key]: "ASC" | "DESC";
+      };
     }
   }
 }

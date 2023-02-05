@@ -6,7 +6,10 @@ export default async function connectToDB() {
   const db: string = config.get("db");
 
   try {
-    await mongoose.connect(db);
+    mongoose.set("strictQuery", false);
+    mongoose.set("strictPopulate", false);
+
+    await mongoose.connect(db, {});
     console.info(`Connected to ${db}...`);
     // winston.info(`Connected to ${db}...`);
   } catch (err) {

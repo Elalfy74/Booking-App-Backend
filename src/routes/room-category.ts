@@ -1,13 +1,18 @@
 import { Router } from "express";
+
+import { isAdmin, isAuth, validator } from "../middlewares";
+
 import * as RoomCategoryController from "../controllers/room-category";
-import validator from "../middlewares/validator";
-import { addRoomCategorySchema } from "../models/room-category/room-category-validation";
+import {
+  addRoomCategorySchema,
+  updateRoomCategorySchema,
+} from "../models/room-category/room-category-validation";
 
 const router = Router();
 
 // GET
 // api/room-categories
-router.get("/", RoomCategoryController.getAllRoomCategories);
+router.get("/", [isAuth, isAdmin], RoomCategoryController.getAllRoomCategories);
 
 // GET
 // api/room-categories/:id
@@ -17,12 +22,24 @@ router.get("/:id", RoomCategoryController.getRoomCategory);
 // api/room-categories
 router.post(
   "/",
-  validator(addRoomCategorySchema),
+  [isAuth, isAdmin, validator(addRoomCategorySchema)],
   RoomCategoryController.addRoomCategory
+);
+
+// PATCH
+// api/room-categories/:id
+router.patch(
+  "/:id",
+  [isAuth, isAdmin, validator(updateRoomCategorySchema)],
+  RoomCategoryController.updateRoomCategory
 );
 
 // DELETE
 // api/room-categories
-router.delete("/:id", RoomCategoryController.deleteRoomCategory);
+router.delete(
+  "/:id",
+  [isAuth, isAdmin],
+  RoomCategoryController.deleteRoomCategory
+);
 
 export default router;

@@ -1,20 +1,31 @@
 import { Router } from "express";
 
-import validator from "../middlewares/validator";
+import { getQuerySchema } from "../utils/utils";
+import {
+  filter,
+  isAdmin,
+  isAuth,
+  pagination,
+  sort,
+  validator,
+} from "../middlewares";
 
+import City from "../models/city/city";
 import * as cityController from "../controllers/city";
 import {
   addCitySchema,
   updateCitySchema,
 } from "../models/city/city-validation";
-import admin from "../middlewares/admin";
-import auth from "../middlewares/auth";
 
 const router = Router();
 
 // GET
 // api/cities
-router.get("/", cityController.getAllCitiesOrFeatured);
+router.get(
+  "/",
+  [validator(null, getQuerySchema), filter, pagination(City), sort],
+  cityController.getCities
+);
 
 // GET
 // api/cities/:id
@@ -24,17 +35,20 @@ router.get("/:id", cityController.getCity);
 // api/cities
 router.post(
   "/",
-  validator(addCitySchema),
-  // [auth, admin, validator(addCitySchema)],
+  [isAuth, isAdmin, validator(addCitySchema)],
   cityController.addCity
 );
 
 // PATCH
-// api/countries/:id
-router.patch("/:id", validator(updateCitySchema), cityController.updateCity);
+// api/cities/:id
+router.patch(
+  "/:id",
+  [isAuth, isAdmin, validator(updateCitySchema)],
+  cityController.updateCity
+);
 
 // DELETE
-// api/countries/:id
-router.delete("/:id", cityController.deleteCity);
+// api/cities/:id
+router.delete("/:id", [isAuth, isAdmin], cityController.deleteCity);
 
 export default router;

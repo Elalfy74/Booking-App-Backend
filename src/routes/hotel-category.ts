@@ -1,13 +1,22 @@
 import { Router } from "express";
+
+import { isAuth, isAdmin, validator } from "../middlewares";
+
 import * as HotelCategoryController from "../controllers/hotel-category";
-import validator from "../middlewares/validator";
-import { addHotelCategorySchema } from "../models/hotel-category/hotel-category-validation";
+import {
+  addHotelCategorySchema,
+  updateHotelCategorySchema,
+} from "../models/hotel-category/hotel-category-validation";
 
 const router = Router();
 
 // GET
 // api/hotel-categories
-router.get("/", HotelCategoryController.getAllHotelCategories);
+router.get(
+  "/",
+  [isAuth, isAdmin],
+  HotelCategoryController.getAllHotelCategories
+);
 
 // GET
 // api/hotel-categories/:id
@@ -17,12 +26,24 @@ router.get("/:id", HotelCategoryController.getHotelCategory);
 // api/hotel-categories
 router.post(
   "/",
-  validator(addHotelCategorySchema),
+  [isAuth, isAdmin, validator(addHotelCategorySchema)],
   HotelCategoryController.addHotelCategory
+);
+
+// PATCH
+// api/hotel-categories
+router.patch(
+  "/:id",
+  [isAuth, isAdmin, validator(updateHotelCategorySchema)],
+  HotelCategoryController.updateHotelCategory
 );
 
 // DELETE
 // api/hotel-categories
-router.delete("/:id", HotelCategoryController.deleteHotelCategory);
+router.delete(
+  "/:id",
+  [isAuth, isAdmin],
+  HotelCategoryController.deleteHotelCategory
+);
 
 export default router;

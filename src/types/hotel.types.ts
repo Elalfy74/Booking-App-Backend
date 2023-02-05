@@ -5,28 +5,26 @@ import { IRoom } from "./room.types";
 export interface IHotel {
   name: string;
   desc: string;
+  cheapestPrice: number;
   address: string;
   distanceToDT: number;
   category: Schema.Types.ObjectId;
   city: Schema.Types.ObjectId;
-  photos: [string];
+  photos: string[];
+  // features:string[];
   noOfStars: number;
-  rooms: [IRoom];
+  rooms: IRoom[];
   isFeatured: boolean;
-  reviews: [IReview];
-  createdAt: Date;
-  updatedAt: Date;
+  reviews: IReview[];
 }
 
-export type AddHotelBody = {
-  name: string;
-  desc: string;
-  address: string;
-  distanceToDT: number;
-  category: Schema.Types.ObjectId;
-  city: Schema.Types.ObjectId;
-  photos: [string];
-  noOfStars: number;
-  rooms: [IRoom];
+export type AddHotelBody = Omit<
+  IHotel,
+  "cheapestPrice" | "isFeatured" | "reviews"
+> & {
   isFeatured?: boolean;
+};
+
+export type UpdateHotelBody = Partial<AddHotelBody> & {
+  reviews?: IReview[];
 };

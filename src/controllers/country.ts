@@ -1,30 +1,34 @@
 import { RequestHandler } from "express";
-import createHttpError from "http-errors";
+
+import { ERRORS, ENTITES, MESSAGES } from "../utils/utils";
+
 import Country from "../models/country/country";
 import { AddCountryBody, updateCountryBody } from "../types/country.types";
 
+const MAX_FEATURED_COUTRIES = 6;
+
+const COUNTRY = {
+  NOT_FOUND: ERRORS.NOT_FOUND(ENTITES.COUNTRY),
+  DUPLICATION: ERRORS.DUPLICATION(ENTITES.COUNTRY, "Name"),
+  MAX: ERRORS.MAX(ENTITES.COUNTRY),
+  CREATED: MESSAGES.CREATED(ENTITES.COUNTRY),
+  UPDATED: MESSAGES.UPDATED(ENTITES.COUNTRY),
+  DELETED: MESSAGES.DELETED(ENTITES.COUNTRY),
+};
+
 // @desc    Retrive All Countries
 // @route   GET /api/countries
-// @access  ADMIN //TODO
-export const getAllCountriesOrFeatured: RequestHandler = async (
-  req,
-  res,
-  next
-) => {
-  const featured = req.query.featured;
+// @access  PUBLIC
+export const getCountries: RequestHandler = async (req, res, next) => {
+  const { findFilter, sort = { name: 1 }, startIndex = 0, limit = 10 } = req;
 
-  let countries;
+  console.log(limit);
 
-  if (featured === "true") {
-    countries = await Country.find({
-      isFeatured: true,
-    });
-  } else {
-    // await fetchData();
-    countries = await Country.find();
-  }
-  res.setHeader("Content-Range", "30");
-  res.setHeader("Access-Control-Expose-Headers", "Content-Range");
+  const countries = await Country.find(findFilter)
+    .limit(limit)
+    .skip(startIndex)
+    .sort(sort);
+
   res.status(200).send(countries);
 };
 
@@ -36,56 +40,77 @@ export const getCountry: RequestHandler = async (req, res, next) => {
 
   const country = await Country.findById(id);
 
-  if (!country) throw createHttpError.NotFound("Country Not Found");
+  if (!country) return next(COUNTRY.NOT_FOUND);
 
   res.status(200).send(country);
 };
 
 // @desc    Add New Country
 // @route   POST /api/countries
-// @access  ADMIN //TODO
+// @access  ADMIN
 export const addCountry: RequestHandler = async (req, res, next) => {
-  const country: AddCountryBody = req.body;
+  const body: AddCountryBody = req.body;
 
-  const newCountry = new Country(country);
+  // CHECK for duplication name
+  const country = await Country.findOne({
+    name: body.name,
+  });
+  if (country) return next(COUNTRY.DUPLICATION);
+
+  // CHECK for the number of featured countries
+  if (body.isFeatured) {
+    const featuredCount = await Country.count({
+      isFeatured: true,
+    });
+    if (featuredCount === MAX_FEATURED_COUTRIES) return next(COUNTRY.MAX);
+  }
+
+  const newCountry = new Country(body);
 
   const savedCountry = await newCountry.save();
 
   res.status(201).send({
-    message: "Successfully added Country",
+    message: COUNTRY.CREATED,
     country: savedCountry,
   });
 };
 
 // @desc    Update Country
 // @route   PUT /api/countries/:id
-// @access  ADMIN //TODO
+// @access  ADMIN
 export const updateCountry: RequestHandler = async (req, res, next) => {
   const { id } = req.params;
-  const newCountry: updateCountryBody = req.body;
+  const body: updateCountryBody = req.body;
 
-  const country = await Country.findByIdAndUpdate(id, newCountry);
+  if (body.isFeatured) {
+    const featuredCount = await Country.count({
+      isFeatured: true,
+    });
 
-  if (!country) throw createHttpError.NotFound("Country Not Found");
+    if (featuredCount === MAX_FEATURED_COUTRIES) return next(COUNTRY.MAX);
+  }
 
+  const country = await Country.findByIdAndUpdate(id, body);
+
+  if (!country) return next(COUNTRY.NOT_FOUND);
   res.status(200).send({
-    message: "Country Updated Successfully",
+    message: COUNTRY.UPDATED,
     country,
   });
 };
 
 // @desc    Delete Country
 // @route   PUT /api/countries/:id
-// @access  ADMIN //TODO
+// @access  ADMIN
 export const deleteCountry: RequestHandler = async (req, res, next) => {
   const { id } = req.params;
 
   const country = await Country.findByIdAndRemove({ _id: id });
 
-  if (!country) createHttpError.NotFound("Country Not Found");
+  if (!country) return next(COUNTRY.NOT_FOUND);
 
   res.status(200).send({
-    message: "Country deleted Successfully",
+    message: COUNTRY.DELETED,
     country,
   });
 };
