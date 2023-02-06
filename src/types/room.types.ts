@@ -1,8 +1,6 @@
-import { Schema } from "mongoose";
-
 export interface IRoom {
+  _id: string;
   title: string;
-  // category: Schema.Types.ObjectId;
   maxPeople: number;
   beds: number;
   desc: string;

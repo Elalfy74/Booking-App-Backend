@@ -1,15 +1,21 @@
 import { Router } from "express";
 
-import { isAdmin, isAuth, validator } from "../middlewares";
+import { filter, isAdmin, isAuth, pagination, sort, validator } from "../middlewares";
 
 import * as hotelController from "../controllers/hotel";
 import { addHotelSchema } from "../models/hotel/hotel-validation";
+import City from "../models/city/city";
+import { featuredQuerySchema } from "../utils/utils";
 
 const router = Router();
 
 // GET
 // api/hotel
-router.get("/", hotelController.getAllHotelsOrFeatured);
+router.get(
+  "/",
+  [validator({ querySchema: featuredQuerySchema }), filter, pagination(City), sort],
+  hotelController.getHotels
+);
 
 // GET
 // api/hotel/rooms/:id
@@ -21,11 +27,7 @@ router.get("/:id", hotelController.getHotel);
 
 // POST
 // api/hotel
-router.post(
-  "/",
-  [isAuth, isAdmin, validator(addHotelSchema)],
-  hotelController.addHotel
-);
+router.post("/", [isAuth, isAdmin, validator(addHotelSchema)], hotelController.addHotel);
 
 // PATCH
 // api/hotel/:id

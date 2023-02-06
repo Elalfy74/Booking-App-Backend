@@ -1,5 +1,4 @@
 import { RequestHandler } from "express";
-import { HttpError } from "http-errors";
 
 import { ERRORS, ENTITES, MESSAGES } from "../utils/utils";
 
@@ -20,11 +19,13 @@ const HOTEL_CATEGORY = {
 // @desc    Retrive All Hotel Categories
 // @route   GET /api/hotel-categories
 // @access  ADMIN
-export const getAllHotelCategories: RequestHandler = async (req, res, next) => {
-  const hotelCategories = await HotelCategory.find();
+export const getCategories: RequestHandler = async (req, res, next) => {
+  const { findFilter, sort = { name: 1 }, startIndex = 0, limit = 10 } = req;
 
-  res.setHeader("Content-Range", "30");
-  res.setHeader("Access-Control-Expose-Headers", "Content-Range");
+  const hotelCategories = await HotelCategory.find(findFilter)
+    .limit(limit)
+    .skip(startIndex)
+    .sort(sort);
 
   res.status(200).send(hotelCategories);
 };
@@ -35,33 +36,26 @@ export const getAllHotelCategories: RequestHandler = async (req, res, next) => {
 export const getHotelCategory: RequestHandler = async (req, res, next) => {
   const { id } = req.params;
 
-  try {
-    const hotelCategory = await HotelCategory.findById(id);
+  const hotelCategory = await HotelCategory.findById(id);
 
-    if (!hotelCategory) return next(HOTEL_CATEGORY.NOT_FOUND);
+  if (!hotelCategory) return next(HOTEL_CATEGORY.NOT_FOUND);
 
-    res.status(200).send(hotelCategory);
-  } catch (err) {
-    next(HOTEL_CATEGORY.NOT_FOUND);
-  }
+  res.status(200).send(hotelCategory);
 };
 
 // @desc    Add New Hotel Category
 // @route   POST /api/hotel-categories
 // @access  ADMIN
 export const addHotelCategory: RequestHandler = async (req, res, next) => {
-  const { name, desc }: AddHotelCategoryBody = req.body;
+  const body: AddHotelCategoryBody = req.body;
 
   const hotelCategory = await HotelCategory.findOne({
-    name,
+    name: body.name,
   });
 
   if (hotelCategory) return next(HOTEL_CATEGORY.DUPLICATION);
 
-  const newHotelCategory = new HotelCategory({
-    name,
-    desc,
-  });
+  const newHotelCategory = new HotelCategory(body);
 
   const savedHotelCategory = await newHotelCategory.save();
 
@@ -78,28 +72,25 @@ export const updateHotelCategory: RequestHandler = async (req, res, next) => {
   const { id } = req.params;
   const body: UpdateHotelCategoryBody = req.body;
 
-  try {
-    const hotelCategory = await HotelCategory.findByIdAndUpdate(id, body, {
-      new: true,
-    });
+  // CHECK for duplication name
+  const hotelCategory = await HotelCategory.findOne({
+    name: body.name,
+  });
 
-    if (!hotelCategory) {
-      return next(HOTEL_CATEGORY.NOT_FOUND);
-    }
+  if (hotelCategory) return next(HOTEL_CATEGORY.DUPLICATION);
 
-    res.status(200).send({
-      message: HOTEL_CATEGORY.UPDATED,
-      hotelCategory,
-    });
-  } catch (err) {
-    const { code } = err as HttpError;
+  const updatedHotelCategory = await HotelCategory.findByIdAndUpdate(id, body, {
+    new: true,
+  });
 
-    // Duplication Value
-    if (code === 11000) {
-      return next(HOTEL_CATEGORY.DUPLICATION);
-    }
-    next(HOTEL_CATEGORY.NOT_FOUND);
+  if (!updatedHotelCategory) {
+    return next(HOTEL_CATEGORY.NOT_FOUND);
   }
+
+  res.status(200).send({
+    message: HOTEL_CATEGORY.UPDATED,
+    hotelCategory: updatedHotelCategory,
+  });
 };
 
 // @desc    Delete Hotel Category
@@ -108,16 +99,12 @@ export const updateHotelCategory: RequestHandler = async (req, res, next) => {
 export const deleteHotelCategory: RequestHandler = async (req, res, next) => {
   const { id } = req.params;
 
-  try {
-    const hotelCategory = await HotelCategory.findByIdAndRemove(id);
+  const hotelCategory = await HotelCategory.findByIdAndRemove(id);
 
-    if (!hotelCategory) return next(HOTEL_CATEGORY.NOT_FOUND);
+  if (!hotelCategory) return next(HOTEL_CATEGORY.NOT_FOUND);
 
-    res.status(200).send({
-      message: HOTEL_CATEGORY.DELETED,
-      hotelCategory,
-    });
-  } catch (err) {
-    next(HOTEL_CATEGORY.NOT_FOUND);
-  }
+  res.status(200).send({
+    message: HOTEL_CATEGORY.DELETED,
+    hotelCategory,
+  });
 };

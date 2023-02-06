@@ -1,4 +1,5 @@
 import { Schema, model } from "mongoose";
+
 import { IHotel } from "../../types/hotel.types";
 import { IRoom } from "../../types/room.types";
 import { reviewSchema } from "../review/review";
@@ -20,9 +21,7 @@ const hotelSchema = new Schema<IHotel>({
   cheapestPrice: {
     type: Number,
     default: function () {
-      const prices: number[] = this.rooms.map(
-        (room: IRoom) => room.currentPrice
-      );
+      const prices: number[] = this.rooms.map((room: IRoom) => room.currentPrice);
       return Math.min.apply(null, prices);
     },
   },

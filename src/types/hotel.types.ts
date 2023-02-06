@@ -1,4 +1,5 @@
-import { Schema } from "mongoose";
+import { ObjectId } from "mongoose";
+
 import { IReview } from "./review.types";
 import { IRoom } from "./room.types";
 
@@ -8,8 +9,8 @@ export interface IHotel {
   cheapestPrice: number;
   address: string;
   distanceToDT: number;
-  category: Schema.Types.ObjectId;
-  city: Schema.Types.ObjectId;
+  category: ObjectId;
+  city: ObjectId;
   photos: string[];
   // features:string[];
   noOfStars: number;
@@ -18,10 +19,17 @@ export interface IHotel {
   reviews: IReview[];
 }
 
-export type AddHotelBody = Omit<
-  IHotel,
-  "cheapestPrice" | "isFeatured" | "reviews"
-> & {
+export type AddHotelBody = {
+  name: string;
+  desc: string;
+  address: string;
+  distanceToDT: number;
+  category: ObjectId;
+  city: ObjectId;
+  photos: string[];
+  // features:string[];
+  noOfStars: number;
+  rooms: IRoom[];
   isFeatured?: boolean;
 };
 

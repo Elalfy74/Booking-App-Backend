@@ -6,8 +6,10 @@ export const addCountrySchema = Joi.object({
   isFeatured: Joi.boolean(),
 });
 
-export const updateCountrySchema = Joi.object({
-  name: Joi.string().min(2).max(50),
-  photo: Joi.string(),
-  isFeatured: Joi.boolean(),
-});
+export const updateCountrySchema = Joi.object()
+  .keys({
+    name: Joi.string().min(2).max(50),
+    photo: Joi.string(),
+    isFeatured: Joi.boolean(),
+  })
+  .min(1);

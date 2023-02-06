@@ -3,35 +3,36 @@ import Joi from "joi";
 
 export const IsValidId = Joi.string().hex().length(24);
 
-export const getQuerySchema = Joi.object({
+export const querySchema = Joi.object().keys({
   filter: Joi.object({
-    id: Joi.array().items(Joi.string()),
-    isFeatured: Joi.boolean(),
+    id: Joi.array().items(IsValidId),
   }),
 
   range: Joi.array().items(Joi.number()).length(2),
   sort: Joi.array()
-    .items(
-      Joi.string().required(),
-      Joi.string().valid("ASC", "DESC").required()
-    )
+    .items(Joi.string().required(), Joi.string().valid("ASC", "DESC").required())
     .length(2),
   withCountry: Joi.boolean(),
 });
 
+export const featuredQuerySchema = querySchema.keys({
+  filter: Joi.object({
+    id: Joi.array().items(IsValidId),
+    isFeatured: Joi.boolean(),
+  }),
+});
+
+export const paramsSchema = Joi.object({
+  id: IsValidId.required(),
+});
+
 export const ERRORS = {
-  NOT_FOUND: (entity: ENTITES) =>
-    createHttpError.NotFound(`${entity} Not Found`),
+  NOT_FOUND: (entity: ENTITES) => createHttpError.NotFound(`${entity} Not Found`),
 
   DUPLICATION: (entity: ENTITES, attribute: string) =>
-    createHttpError.BadRequest(
-      `${entity} With Same ${attribute} Already Exist`
-    ),
+    createHttpError.BadRequest(`${entity} With Same ${attribute} Already Exist`),
   MAX: (entity: ENTITES) =>
     `Featured ${entity} count are already at max, please unfeature one before adding new one`,
-  EMPTY: createHttpError.BadRequest(
-    "Please provide at least one new attribute"
-  ),
 };
 
 export const MESSAGES = {

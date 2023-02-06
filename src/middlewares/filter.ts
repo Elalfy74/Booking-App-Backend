@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from "express";
 import _ from "lodash";
-import { QueryFields } from "../types/types";
+import { QueryFields, QueryFieldsWithFeatured } from "../types/types";
 
 export type FindFilter = {
   _id?: {
@@ -10,7 +10,7 @@ export type FindFilter = {
 };
 
 export default (req: Request, res: Response, next: NextFunction) => {
-  const { filter }: QueryFields = req.query;
+  const { filter }: QueryFields | QueryFieldsWithFeatured = req.query;
 
   const findFilter: FindFilter = {};
 
@@ -20,7 +20,7 @@ export default (req: Request, res: Response, next: NextFunction) => {
     findFilter._id = { $in: filter.id };
   }
 
-  if (Boolean(filter.isFeatured)) {
+  if ("isFeatured" in filter) {
     findFilter.isFeatured = filter.isFeatured;
   }
 

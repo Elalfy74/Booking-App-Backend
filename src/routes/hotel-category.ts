@@ -1,12 +1,14 @@
 import { Router } from "express";
 
-import { isAuth, isAdmin, validator } from "../middlewares";
+import { paramsSchema, querySchema } from "../utils/utils";
+import { isAuth, isAdmin, validator, filter, pagination, sort } from "../middlewares";
 
 import * as HotelCategoryController from "../controllers/hotel-category";
 import {
   addHotelCategorySchema,
   updateHotelCategorySchema,
 } from "../models/hotel-category/hotel-category-validation";
+import HotelCategory from "../models/hotel-category/hotel-category";
 
 const router = Router();
 
@@ -14,19 +16,19 @@ const router = Router();
 // api/hotel-categories
 router.get(
   "/",
-  [isAuth, isAdmin],
-  HotelCategoryController.getAllHotelCategories
+  [validator({ querySchema }), filter, pagination(HotelCategory), sort],
+  HotelCategoryController.getCategories
 );
 
 // GET
 // api/hotel-categories/:id
-router.get("/:id", HotelCategoryController.getHotelCategory);
+router.get("/:id", validator({ paramsSchema }), HotelCategoryController.getHotelCategory);
 
 // POST
 // api/hotel-categories
 router.post(
   "/",
-  [isAuth, isAdmin, validator(addHotelCategorySchema)],
+  [isAuth, isAdmin, validator({ bodySchema: addHotelCategorySchema })],
   HotelCategoryController.addHotelCategory
 );
 
@@ -34,7 +36,7 @@ router.post(
 // api/hotel-categories
 router.patch(
   "/:id",
-  [isAuth, isAdmin, validator(updateHotelCategorySchema)],
+  [isAuth, isAdmin, validator({ bodySchema: updateHotelCategorySchema, paramsSchema })],
   HotelCategoryController.updateHotelCategory
 );
 
@@ -42,7 +44,7 @@ router.patch(
 // api/hotel-categories
 router.delete(
   "/:id",
-  [isAuth, isAdmin],
+  [isAuth, isAdmin, validator({ paramsSchema })],
   HotelCategoryController.deleteHotelCategory
 );
 

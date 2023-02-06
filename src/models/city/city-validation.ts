@@ -1,4 +1,5 @@
 import Joi from "joi";
+
 import { IsValidId } from "../../utils/utils";
 
 export const addCitySchema = Joi.object({

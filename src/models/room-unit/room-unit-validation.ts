@@ -1,13 +1,17 @@
 import Joi from "joi";
 
+import { IsValidId } from "../../utils/utils";
+
 export const addRoomUnitSchema = Joi.object({
-  hotel: Joi.string().required(),
-  room: Joi.string().required(),
+  hotel: IsValidId.required(),
+  room: IsValidId.required(),
   number: Joi.number().min(1).required(),
 });
 
-export const updateRoomUnitSchema = Joi.object({
-  room: Joi.string(),
-  number: Joi.number().min(1),
-  unavailableDates: Joi.array(),
-});
+export const updateRoomUnitSchema = Joi.object()
+  .keys({
+    room: IsValidId,
+    number: Joi.number().min(1),
+    unavailableDates: Joi.array().items(Joi.date()),
+  })
+  .min(1);

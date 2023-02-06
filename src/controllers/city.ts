@@ -22,8 +22,7 @@ export const getCities: RequestHandler = async (req, res, next) => {
   const { findFilter, sort = { name: 1 }, startIndex = 0, limit = 10 } = req;
   const { withCountry } = req.query;
 
-  const country =
-    withCountry && typeof withCountry === "string" ? "country" : "";
+  const country = withCountry && typeof withCountry === "string" ? "country" : "";
 
   const cities = await City.find(findFilter)
     .populate(country)
@@ -86,7 +85,9 @@ export const updateCity: RequestHandler = async (req, res, next) => {
     if (featuredCount === MAX_FEATURED_CITIES) return next(CITY.MAX);
   }
 
-  const city = await City.findByIdAndUpdate(id, body);
+  const city = await City.findByIdAndUpdate(id, body, {
+    new: true,
+  });
 
   if (!city) return next(CITY.NOT_FOUND);
 
@@ -102,7 +103,7 @@ export const updateCity: RequestHandler = async (req, res, next) => {
 export const deleteCity: RequestHandler = async (req, res, next) => {
   const { id } = req.params;
 
-  const city = await City.findByIdAndRemove({ _id: id });
+  const city = await City.findByIdAndRemove(id);
 
   if (!city) return next(CITY.NOT_FOUND);
 

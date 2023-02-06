@@ -22,8 +22,6 @@ const COUNTRY = {
 export const getCountries: RequestHandler = async (req, res, next) => {
   const { findFilter, sort = { name: 1 }, startIndex = 0, limit = 10 } = req;
 
-  console.log(limit);
-
   const countries = await Country.find(findFilter)
     .limit(limit)
     .skip(startIndex)
@@ -76,11 +74,17 @@ export const addCountry: RequestHandler = async (req, res, next) => {
 };
 
 // @desc    Update Country
-// @route   PUT /api/countries/:id
+// @route   PATCH /api/countries/:id
 // @access  ADMIN
 export const updateCountry: RequestHandler = async (req, res, next) => {
   const { id } = req.params;
   const body: updateCountryBody = req.body;
+
+  // CHECK for duplication name
+  const country = await Country.findOne({
+    name: body.name,
+  });
+  if (country) return next(COUNTRY.DUPLICATION);
 
   if (body.isFeatured) {
     const featuredCount = await Country.count({
@@ -90,12 +94,14 @@ export const updateCountry: RequestHandler = async (req, res, next) => {
     if (featuredCount === MAX_FEATURED_COUTRIES) return next(COUNTRY.MAX);
   }
 
-  const country = await Country.findByIdAndUpdate(id, body);
+  const updatedCountry = await Country.findByIdAndUpdate(id, body, {
+    new: true,
+  });
 
-  if (!country) return next(COUNTRY.NOT_FOUND);
+  if (!updatedCountry) return next(COUNTRY.NOT_FOUND);
   res.status(200).send({
     message: COUNTRY.UPDATED,
-    country,
+    country: updatedCountry,
   });
 };
 
@@ -105,7 +111,7 @@ export const updateCountry: RequestHandler = async (req, res, next) => {
 export const deleteCountry: RequestHandler = async (req, res, next) => {
   const { id } = req.params;
 
-  const country = await Country.findByIdAndRemove({ _id: id });
+  const country = await Country.findByIdAndRemove(id);
 
   if (!country) return next(COUNTRY.NOT_FOUND);
 
@@ -115,41 +121,41 @@ export const deleteCountry: RequestHandler = async (req, res, next) => {
   });
 };
 
-async function fetchData() {
-  try {
-    const results = await Country.aggregate([
-      {
-        $lookup: {
-          from: "cities",
-          localField: "_id",
-          foreignField: "country",
-          as: "cities",
-        },
-      },
-      {
-        $unwind: {
-          path: "$cities",
-          preserveNullAndEmptyArrays: true,
-        },
-      },
-      {
-        $group: {
-          _id: "$_id",
-          name: { $first: "$name" },
-          count: { $sum: 1 },
-        },
-      },
-      {
-        $project: {
-          _id: 1,
-          name: 1,
-          count: 1,
-        },
-      },
-    ]);
+// async function fetchData() {
+//   try {
+//     const results = await Country.aggregate([
+//       {
+//         $lookup: {
+//           from: "cities",
+//           localField: "_id",
+//           foreignField: "country",
+//           as: "cities",
+//         },
+//       },
+//       {
+//         $unwind: {
+//           path: "$cities",
+//           preserveNullAndEmptyArrays: true,
+//         },
+//       },
+//       {
+//         $group: {
+//           _id: "$_id",
+//           name: { $first: "$name" },
+//           count: { $sum: 1 },
+//         },
+//       },
+//       {
+//         $project: {
+//           _id: 1,
+//           name: 1,
+//           count: 1,
+//         },
+//       },
+//     ]);
 
-    console.log(results);
-  } catch (error) {
-    console.error(error);
-  }
-}
+//     console.log(results);
+//   } catch (error) {
+//     console.error(error);
+//   }
+// }

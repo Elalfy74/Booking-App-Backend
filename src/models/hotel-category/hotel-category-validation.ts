@@ -6,7 +6,9 @@ export const addHotelCategorySchema = Joi.object({
   desc: COMMON_SCHEMA.desc.required(),
 });
 
-export const updateHotelCategorySchema = Joi.object({
-  name: COMMON_SCHEMA.name,
-  desc: COMMON_SCHEMA.desc,
-});
+export const updateHotelCategorySchema = Joi.object()
+  .keys({
+    name: COMMON_SCHEMA.name,
+    desc: COMMON_SCHEMA.desc,
+  })
+  .min(1);

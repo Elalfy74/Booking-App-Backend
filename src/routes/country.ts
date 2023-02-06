@@ -1,21 +1,11 @@
 import { Router } from "express";
 
-import { getQuerySchema } from "../utils/utils";
-import {
-  filter,
-  isAdmin,
-  isAuth,
-  pagination,
-  sort,
-  validator,
-} from "../middlewares";
+import { paramsSchema, featuredQuerySchema } from "../utils/utils";
+import { filter, isAdmin, isAuth, pagination, sort, validator } from "../middlewares";
 
 import Country from "../models/country/country";
 import * as countryController from "../controllers/country";
-import {
-  addCountrySchema,
-  updateCountrySchema,
-} from "../models/country/country-validation";
+import { addCountrySchema, updateCountrySchema } from "../models/country/country-validation";
 
 const router = Router();
 
@@ -23,19 +13,19 @@ const router = Router();
 // api/countries
 router.get(
   "/",
-  [validator(null, getQuerySchema), filter, pagination(Country), sort],
+  [validator({ querySchema: featuredQuerySchema }), filter, pagination(Country), sort],
   countryController.getCountries
 );
 
 // GET
 // api/countries/:id
-router.get("/:id", countryController.getCountry);
+router.get("/:id", validator({ paramsSchema }), countryController.getCountry);
 
 // POST
 // api/countries
 router.post(
   "/",
-  [isAuth, isAdmin, validator(addCountrySchema)],
+  [isAuth, isAdmin, validator({ bodySchema: addCountrySchema })],
   countryController.addCountry
 );
 
@@ -43,12 +33,16 @@ router.post(
 // api/countries/:id
 router.patch(
   "/:id",
-  [isAuth, isAdmin, validator(updateCountrySchema)],
+  [isAuth, isAdmin, validator({ bodySchema: updateCountrySchema, paramsSchema })],
   countryController.updateCountry
 );
 
 // DELETE
 // api/countries/:id
-router.delete("/:id", [isAuth, isAdmin], countryController.deleteCountry);
+router.delete(
+  "/:id",
+  [isAuth, isAdmin, validator({ paramsSchema })],
+  countryController.deleteCountry
+);
 
 export default router;
