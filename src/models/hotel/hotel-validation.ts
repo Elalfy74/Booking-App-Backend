@@ -1,6 +1,6 @@
 import Joi from "joi";
 import { IsValidId } from "../../utils/utils";
-import { addRoomSchema } from "../room/room-validation";
+import { addRoomSchema, updateRoomSchema } from "../room/room-validation";
 
 export const addHotelSchema = Joi.object({
   name: Joi.string().min(2).max(50).required(),
@@ -9,7 +9,7 @@ export const addHotelSchema = Joi.object({
   distanceToDT: Joi.number().min(1).required(),
   category: IsValidId.required(),
   city: IsValidId.required(),
-  photos: Joi.array().items(Joi.string()).required(),
+  photos: Joi.array().items(Joi.string()).min(1).required(),
   noOfStars: Joi.number().min(1).max(5).required(),
   rooms: Joi.array().items(addRoomSchema).required(),
   isFeatured: Joi.boolean(),
@@ -23,9 +23,9 @@ export const updateHotelSchema = Joi.object()
     distanceToDT: Joi.number().min(1),
     category: IsValidId,
     city: IsValidId,
-    photos: Joi.array().items(Joi.string()),
+    photos: Joi.array().items(Joi.string()).min(1),
     noOfStars: Joi.number().min(1).max(5),
-    rooms: Joi.array().items(addRoomSchema),
+    rooms: Joi.array().items(updateRoomSchema),
     isFeatured: Joi.boolean(),
     reviews: Joi.array(),
   })

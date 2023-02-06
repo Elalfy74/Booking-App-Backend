@@ -1,13 +1,16 @@
 import { RequestHandler } from "express";
+import mongoose, { ObjectId } from "mongoose";
 
 import { ENTITES, ERRORS, MESSAGES } from "../utils/utils";
+import isValidRefrence from "../utils/isValidRefrence";
 
 import Hotel from "../models/hotel/hotel";
+import City from "../models/city/city";
+
 import { AddHotelBody, UpdateHotelBody } from "../types/hotel.types";
-import createHttpError from "http-errors";
-import { ObjectId } from "mongoose";
-import isValidRefrence from "../utils/isValidRefrence";
 import HotelCategory from "../models/hotel-category/hotel-category";
+import Room from "../models/room/room";
+import { IRoom } from "../types/room.types";
 
 const HOTEL = {
   NOT_FOUND: ERRORS.NOT_FOUND(ENTITES.HOTEL),
@@ -50,6 +53,9 @@ export const getRoomsOfHotel: RequestHandler = async (req, res, next) => {
 
   if (!rooms) return next(HOTEL.NOT_FOUND);
 
+  res.setHeader("Content-Range", rooms.rooms.length);
+  res.setHeader("Access-Control-Expose-Headers", "Content-Range");
+
   res.status(200).send(rooms.rooms);
 };
 
@@ -59,10 +65,10 @@ export const getRoomsOfHotel: RequestHandler = async (req, res, next) => {
 export const addHotel: RequestHandler = async (req, res, next) => {
   const body: AddHotelBody = req.body;
 
-  await checkCityAndCategory(body);
+  const hasError = await checkCityAndCategory(body);
+  if (hasError) return next(ERRORS.NOT_FOUND(hasError));
 
   const hotel = new Hotel(body);
-
   const savedHotel = await hotel.save();
 
   res.status(201).send({
@@ -76,16 +82,22 @@ export const addHotel: RequestHandler = async (req, res, next) => {
 // @access  ADMIN
 export const updateHotel: RequestHandler = async (req, res, next) => {
   const { id } = req.params;
-  const body = req.body;
+  const body: UpdateHotelBody = req.body;
 
-  const hotel = await Hotel.findById(id);
+  // Check for valid refrences
+  const hasError = await checkCityAndCategory(body);
+  if (hasError) return next(ERRORS.NOT_FOUND(hasError));
 
-  hotel?.rooms.push(body.rooms[0]);
-
-  const updatedHotel = await hotel?.save();
+  // delete the empty id to let mongoose generate it
+  if (body.rooms) {
+    body.rooms.forEach((room) => {
+      if (!room._id) delete room._id;
+    });
+  }
+  const updatedHotel = await Hotel.findByIdAndUpdate(id, body, { new: true });
 
   res.status(200).send({
-    message: "Successfully Updated Hotel",
+    message: HOTEL.UPDATED,
     hotel: updatedHotel,
   });
 };
@@ -96,18 +108,14 @@ export const updateHotel: RequestHandler = async (req, res, next) => {
 export const deleteHotel: RequestHandler = async (req, res, next) => {
   const { id } = req.params;
 
-  try {
-    const hotel = await Hotel.findByIdAndRemove({ _id: id });
+  const hotel = await Hotel.findByIdAndRemove(id);
 
-    if (!hotel) return next(HOTEL.NOT_FOUND);
+  if (!hotel) return next(HOTEL.NOT_FOUND);
 
-    res.status(200).send({
-      message: HOTEL.DELETED,
-      hotel,
-    });
-  } catch (err) {
-    next(HOTEL.NOT_FOUND);
-  }
+  res.status(200).send({
+    message: HOTEL.DELETED,
+    hotel,
+  });
 };
 
 export async function hotelHaveRoom(hotelId: ObjectId, roomId: ObjectId) {
@@ -115,10 +123,10 @@ export async function hotelHaveRoom(hotelId: ObjectId, roomId: ObjectId) {
 
   const hotel = await Hotel.findById(hotelId).select({ rooms: 1 });
 
-  if (!hotel) throw createHttpError.NotFound("Hotel Not Found");
+  if (!hotel) throw HOTEL.NOT_FOUND;
 
   for (let i = 0; i < hotel.rooms.length; i++) {
-    if (hotel.rooms[i]._id === roomId.toString()) {
+    if (hotel.rooms[i]._id.toString() === roomId.toString()) {
       isFound = true;
       break;
     }
@@ -141,8 +149,9 @@ async function checkCityAndCategory(body: AddHotelBody | UpdateHotelBody) {
   if (body.city) {
     const city = await isValidRefrence({
       id: body.city,
-      Model: HotelCategory,
+      Model: City,
     });
     if (!city) return ENTITES.CITY;
   }
+  return;
 }

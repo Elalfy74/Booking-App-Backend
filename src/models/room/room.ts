@@ -47,6 +47,6 @@ export const roomSchema = new Schema<IRoom>({
   },
 });
 
-// const Room = model("Room", roomSchema);
+const Room = model("Room", roomSchema);
 
-// export default Room;
+export default Room;

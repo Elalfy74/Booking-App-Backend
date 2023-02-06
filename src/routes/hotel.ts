@@ -1,11 +1,11 @@
 import { Router } from "express";
 
+import { featuredQuerySchema, paramsSchema } from "../utils/utils";
 import { filter, isAdmin, isAuth, pagination, sort, validator } from "../middlewares";
 
 import * as hotelController from "../controllers/hotel";
-import { addHotelSchema } from "../models/hotel/hotel-validation";
-import City from "../models/city/city";
-import { featuredQuerySchema } from "../utils/utils";
+import { addHotelSchema, updateHotelSchema } from "../models/hotel/hotel-validation";
+import Hotel from "../models/hotel/hotel";
 
 const router = Router();
 
@@ -13,28 +13,36 @@ const router = Router();
 // api/hotel
 router.get(
   "/",
-  [validator({ querySchema: featuredQuerySchema }), filter, pagination(City), sort],
+  [validator({ querySchema: featuredQuerySchema }), filter, pagination(Hotel), sort],
   hotelController.getHotels
 );
 
 // GET
 // api/hotel/rooms/:id
-router.get("/rooms/:id", hotelController.getRoomsOfHotel);
+router.get("/rooms/:id", [validator({ paramsSchema })], hotelController.getRoomsOfHotel);
 
 // GET
 // api/hotel/:id
-router.get("/:id", hotelController.getHotel);
+router.get("/:id", validator({ paramsSchema }), hotelController.getHotel);
 
 // POST
 // api/hotel
-router.post("/", [isAuth, isAdmin, validator(addHotelSchema)], hotelController.addHotel);
+router.post(
+  "/",
+  [isAuth, isAdmin, validator({ bodySchema: addHotelSchema })],
+  hotelController.addHotel
+);
 
 // PATCH
 // api/hotel/:id
-router.patch("/:id", [isAuth, isAdmin], hotelController.updateHotel);
+router.patch(
+  "/:id",
+  [isAuth, isAdmin, validator({ bodySchema: updateHotelSchema, paramsSchema })],
+  hotelController.updateHotel
+);
 
 // DELETE
 // api/hotel/:id
-router.delete("/:id", [isAuth, isAdmin], hotelController.deleteHotel);
+router.delete("/:id", [isAuth, isAdmin, validator({ paramsSchema })], hotelController.deleteHotel);
 
 export default router;

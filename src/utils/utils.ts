@@ -32,7 +32,9 @@ export const ERRORS = {
   DUPLICATION: (entity: ENTITES, attribute: string) =>
     createHttpError.BadRequest(`${entity} With Same ${attribute} Already Exist`),
   MAX: (entity: ENTITES) =>
-    `Featured ${entity} count are already at max, please unfeature one before adding new one`,
+    createHttpError.BadRequest(
+      `Featured ${entity} count are already at max, please unfeature one before adding new one`
+    ),
 };
 
 export const MESSAGES = {

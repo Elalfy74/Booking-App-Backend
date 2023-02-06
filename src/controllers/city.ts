@@ -78,6 +78,7 @@ export const updateCity: RequestHandler = async (req, res, next) => {
   const body: updateCityBody = req.body;
 
   if (body.isFeatured) {
+    console.log("here");
     const featuredCount = await City.count({
       isFeatured: true,
     });

@@ -1,16 +1,22 @@
 import { Router } from "express";
 
-import { isAuth, isAdmin, validator } from "../middlewares";
+import { isAuth, isAdmin, validator, filter, pagination, sort } from "../middlewares";
 import { paramsSchema, querySchema } from "../utils/utils";
 
 import * as RoomUnitController from "../controllers/room-unit";
 import { addRoomUnitSchema, updateRoomUnitSchema } from "../models/room-unit/room-unit-validation";
 
+import RoomUnit from "../models/room-unit/room-unit";
+
 const router = Router();
 
 // GET
 // api/room-units
-router.get("/", [isAuth, isAdmin, validator({ querySchema })], RoomUnitController.getRoomUnits);
+router.get(
+  "/",
+  [validator({ querySchema }), filter, pagination(RoomUnit), sort],
+  RoomUnitController.getRoomUnits
+);
 
 // GET
 // api/room-units/:id
