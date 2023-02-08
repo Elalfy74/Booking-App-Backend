@@ -7,7 +7,7 @@
     "dev": "nodemon src/app.ts",
     "build": "tsc",
     "start": "node dist/app.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "jest --watchAll --detectOpenHandles"
   },
   "keywords": [],
   "author": "",
@@ -37,9 +37,11 @@
     "@types/dotenv": "^8.2.0",
     "@types/express": "^4.17.14",
     "@types/http-errors": "^2.0.1",
+    "@types/jest": "^29.4.0",
     "@types/jsonwebtoken": "^8.5.9",
     "@types/lodash": "^4.14.191",
     "@types/node": "^18.11.11",
+    "@types/supertest": "^2.0.12",
     "@typescript-eslint/eslint-plugin": "^5.50.0",
     "@typescript-eslint/parser": "^5.50.0",
     "eslint": "^8.33.0",
@@ -50,8 +52,12 @@
     "eslint-plugin-simple-import-sort": "^10.0.0",
     "faker": "^6.6.6",
     "http-errors": "^2.0.0",
+    "jest": "^29.4.2",
+    "mongodb-memory-server": "^8.11.4",
     "nodemon": "^2.0.20",
     "prettier": "^2.8.3",
+    "supertest": "^6.3.3",
+    "ts-jest": "^29.0.5",
     "typescript": "^4.9.5"
   }
 }

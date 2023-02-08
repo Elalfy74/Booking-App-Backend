@@ -1,18 +1,18 @@
-import Joi from "joi";
+import Joi from 'joi';
 
 export const COMMON_SCHEMA = {
   name: Joi.string().min(2).max(50).messages({
-    "string.base": "'name' should be a type of 'string'",
-    "string.empty": "'name' cannot be an empty field",
-    "string.min": "'name' should have a minimum length of {#limit}",
-    "any.required": "'name' is a required field",
+    'string.base': "'name' should be a type of 'string'",
+    'string.empty': "'name' cannot be an empty field",
+    'string.min': "'name' should have a minimum length of {#limit}",
+    'any.required': "'name' is a required field",
   }),
 
   desc: Joi.string().min(4).max(200).messages({
-    "string.base": "'desc' should be a type of 'string'",
-    "string.empty": "'desc' cannot be an empty field",
-    "string.min": "'desc' should have a minimum length of {#limit}",
-    "any.required": "'desc' is a required field",
+    'string.base': "'desc' should be a type of 'string'",
+    'string.empty': "'desc' cannot be an empty field",
+    'string.min': "'desc' should have a minimum length of {#limit}",
+    'any.required': "'desc' is a required field",
   }),
 };
 

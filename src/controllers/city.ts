@@ -1,19 +1,13 @@
-import { RequestHandler } from "express";
+import { RequestHandler } from 'express';
 
-import { ERRORS, ENTITES, MESSAGES } from "../utils/utils";
+import { ENTITES, Utils } from '../utils/utils';
 
-import City from "../models/city/city";
-import { AddCityBody, updateCityBody } from "../types/city.types";
+import City from '../models/city/city';
+import { AddCityBody, updateCityBody } from '../types/city.types';
 
 const MAX_FEATURED_CITIES = 6;
 
-const CITY = {
-  NOT_FOUND: ERRORS.NOT_FOUND(ENTITES.CITY),
-  MAX: ERRORS.MAX(ENTITES.CITY),
-  CREATED: MESSAGES.CREATED(ENTITES.CITY),
-  UPDATED: MESSAGES.UPDATED(ENTITES.CITY),
-  DELETED: MESSAGES.DELETED(ENTITES.CITY),
-};
+const CITY = new Utils(ENTITES.CITY);
 
 // @desc    Retrive All cities
 // @route   GET /api/cities
@@ -22,7 +16,7 @@ export const getCities: RequestHandler = async (req, res, next) => {
   const { findFilter, sort = { name: 1 }, startIndex = 0, limit = 10 } = req;
   const { withCountry } = req.query;
 
-  const country = withCountry && typeof withCountry === "string" ? "country" : "";
+  const country = withCountry && typeof withCountry === 'string' ? 'country' : '';
 
   const cities = await City.find(findFilter)
     .populate(country)
@@ -41,7 +35,7 @@ export const getCity: RequestHandler = async (req, res, next) => {
 
   const city = await City.findById(id);
 
-  if (!city) return next(CITY.NOT_FOUND);
+  if (!city) return next(CITY.NOT_FOUND());
 
   res.status(200).send(city);
 };
@@ -57,7 +51,7 @@ export const addCity: RequestHandler = async (req, res, next) => {
       isFeatured: true,
     });
 
-    if (featuredCount === MAX_FEATURED_CITIES) return next(CITY.MAX);
+    if (featuredCount === MAX_FEATURED_CITIES) return next(CITY.MAX());
   }
 
   const newCity = new City(body);
@@ -65,7 +59,7 @@ export const addCity: RequestHandler = async (req, res, next) => {
   const savedCity = await newCity.save();
 
   res.status(201).send({
-    message: CITY.CREATED,
+    message: CITY.CREATED(),
     city: savedCity,
   });
 };
@@ -78,22 +72,21 @@ export const updateCity: RequestHandler = async (req, res, next) => {
   const body: updateCityBody = req.body;
 
   if (body.isFeatured) {
-    console.log("here");
     const featuredCount = await City.count({
       isFeatured: true,
     });
 
-    if (featuredCount === MAX_FEATURED_CITIES) return next(CITY.MAX);
+    if (featuredCount === MAX_FEATURED_CITIES) return next(CITY.MAX());
   }
 
   const city = await City.findByIdAndUpdate(id, body, {
     new: true,
   });
 
-  if (!city) return next(CITY.NOT_FOUND);
+  if (!city) return next(CITY.NOT_FOUND());
 
   res.status(200).send({
-    message: CITY.UPDATED,
+    message: CITY.UPDATED(),
     city,
   });
 };
@@ -106,10 +99,10 @@ export const deleteCity: RequestHandler = async (req, res, next) => {
 
   const city = await City.findByIdAndRemove(id);
 
-  if (!city) return next(CITY.NOT_FOUND);
+  if (!city) return next(CITY.NOT_FOUND());
 
   res.status(200).send({
-    message: CITY.DELETED,
+    message: CITY.DELETED(),
     city,
   });
 };

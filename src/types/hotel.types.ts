@@ -1,10 +1,9 @@
-import { ObjectId } from "mongoose";
+import { ObjectId } from 'mongoose';
 
-import { IReview } from "./review.types";
-import { AddRoomBody, IRoom } from "./room.types";
+import { IReview } from './review.types';
+import { AddRoomBody, IRoom } from './room.types';
 
 export interface IHotel {
-  [x: string]: any;
   name: string;
   desc: string;
   cheapestPrice: number;
@@ -34,7 +33,7 @@ export type AddHotelBody = {
   isFeatured?: boolean;
 };
 
-export type UpdateHotelBody = Omit<Partial<AddHotelBody>, "rooms"> & {
+export type UpdateHotelBody = Omit<Partial<AddHotelBody>, 'rooms'> & {
   reviews?: IReview[];
   rooms?: AddRoomBody[];
 };

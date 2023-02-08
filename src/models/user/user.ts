@@ -1,16 +1,10 @@
-import { model, Schema } from "mongoose";
-import { hash } from "bcryptjs";
-import config from "config";
-import { sign } from "jsonwebtoken";
-import { serialize } from "cookie";
-import createError from "http-errors";
+import { model, Schema } from 'mongoose';
+import { hash } from 'bcryptjs';
 
-import {
-  IUser,
-  UserModel,
-  IUserMethods,
-  SignupBody,
-} from "../../types/user.types";
+import createError from 'http-errors';
+
+import { IUser, UserModel, IUserMethods, SignupBody } from '../../types/user.types';
+import { signAccessToken, signCookiesToken, signRefreshToken } from '../../utils/jwt-helper';
 
 const userSchema = new Schema<IUser, UserModel, IUserMethods>(
   {
@@ -47,60 +41,43 @@ const userSchema = new Schema<IUser, UserModel, IUserMethods>(
   { timestamps: true }
 );
 
-userSchema.pre("save", async function (next) {
+userSchema.pre('save', async function () {
   this.password = await hash(this.password, 12);
-  next();
 });
 
-userSchema.methods.generateToken = function () {
-  return sign(
-    { userId: this._id, isAdmin: this.isAdmin },
-    config.get("tokenKey"),
-    {
-      expiresIn: "1h",
-    }
-  );
+userSchema.methods.generateAccessToken = function () {
+  return signAccessToken({
+    userId: this._id,
+    isAdmin: this.isAdmin,
+  });
 };
 
 userSchema.methods.generateRefreshToken = function () {
-  return sign(
-    { userId: this._id, isAdmin: this.isAdmin },
-    config.get("refreshTokenKey"),
-    {
-      expiresIn: "1y",
-    }
-  );
+  return signRefreshToken({
+    userId: this._id,
+    isAdmin: this.isAdmin,
+  });
 };
 
 userSchema.methods.generateCookiesToken = function () {
-  const token = sign(
-    { userId: this._id, isAdmin: this.isAdmin },
-    config.get("tokenKey")
-    // {
-    //   expiresIn: "1h",
-    // }
-  );
-
-  return serialize("JWT_TOKEN", token, {
-    httpOnly: true,
-    maxAge: 60 * 60 * 24 * 30,
-    sameSite: "strict",
-    path: "/",
+  return signCookiesToken({
+    userId: this._id,
+    isAdmin: this.isAdmin,
   });
 };
 
 userSchema.statics.signupUser = async function (user: SignupBody) {
   const isExist = await this.findOne({ email: user.email });
 
-  if (isExist) throw createError.BadRequest("Email Already exist");
+  if (isExist) throw createError.BadRequest('Email Already exist');
 
   return this.create(user);
 };
 
 userSchema.statics.findByEmail = async function (email: string) {
-  return this.findOne({ email }).select("+password");
+  return this.findOne({ email }).select('+password');
 };
 
-const User = model<IUser, UserModel>("User", userSchema);
+const User = model<IUser, UserModel>('User', userSchema);
 
 export default User;

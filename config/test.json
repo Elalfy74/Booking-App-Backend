@@ -1,0 +1,6 @@
+{
+  "tokenKey": "testToken",
+  "refreshTokenKey": "anyotherKey",
+  "db": "mongodb://localhost:27017/booking-app-test",
+  "port": 8000
+}

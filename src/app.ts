@@ -1,29 +1,34 @@
-import "express-async-errors";
+// import 'express-async-errors';
 
-import config from "config";
-import dotenv from "dotenv";
-import express from "express";
+import config from 'config';
+import dotenv from 'dotenv';
+// import express from 'express';
+import http from 'http';
 
-import connectToDB from "./startup/db";
-import middlewares from "./startup/middlewares";
-import routes from "./startup/routes";
-// import { addCities } from "./scripts/scipt";
-// import { addCountries } from "./scripts/scipt";
+import connectToDB from './startup/db';
+// import middlewares from './startup/middlewares';
+// import routes from './startup/routes';
+import checkConfig from './startup/config';
+import { logger, testLoggerEnv } from './utils/logger';
+import app from './startup/create-server';
 
-dotenv.config();
+// dotenv.config();
+testLoggerEnv();
+checkConfig();
 
-const app = express();
+const port = config.get('port') || 8000;
 
-middlewares(app);
+// const app = express();
 
-routes(app);
+// middlewares(app);
+// routes(app);
 
-const port = config.get("port") || 8000;
+const server = http.createServer(app);
 
 connectToDB().then(() => {
-  app.listen(port, () => {
-    // addCountries();
-    // addCities();
-    console.info(`App is Listening to Port ${port}`);
+  server.listen(port, () => {
+    logger.info(`Running at Port ${port}`);
   });
 });
+
+export default app;

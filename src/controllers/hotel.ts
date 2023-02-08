@@ -1,16 +1,16 @@
-import { RequestHandler } from "express";
-import mongoose, { ObjectId } from "mongoose";
+import { RequestHandler } from 'express';
+import mongoose, { ObjectId } from 'mongoose';
 
-import { ENTITES, ERRORS, MESSAGES } from "../utils/utils";
-import isValidRefrence from "../utils/isValidRefrence";
+import { ENTITES, ERRORS, MESSAGES } from '../utils/utils';
+import isValidRefrence from '../utils/isValidRefrence';
 
-import Hotel from "../models/hotel/hotel";
-import City from "../models/city/city";
+import Hotel from '../models/hotel/hotel';
+import City from '../models/city/city';
 
-import { AddHotelBody, UpdateHotelBody } from "../types/hotel.types";
-import HotelCategory from "../models/hotel-category/hotel-category";
-import Room from "../models/room/room";
-import { IRoom } from "../types/room.types";
+import { AddHotelBody, UpdateHotelBody } from '../types/hotel.types';
+import HotelCategory from '../models/hotel-category/hotel-category';
+import Room from '../models/room/room';
+import { IRoom } from '../types/room.types';
 
 const HOTEL = {
   NOT_FOUND: ERRORS.NOT_FOUND(ENTITES.HOTEL),
@@ -53,8 +53,8 @@ export const getRoomsOfHotel: RequestHandler = async (req, res, next) => {
 
   if (!rooms) return next(HOTEL.NOT_FOUND);
 
-  res.setHeader("Content-Range", rooms.rooms.length);
-  res.setHeader("Access-Control-Expose-Headers", "Content-Range");
+  res.setHeader('Content-Range', rooms.rooms.length);
+  res.setHeader('Access-Control-Expose-Headers', 'Content-Range');
 
   res.status(200).send(rooms.rooms);
 };

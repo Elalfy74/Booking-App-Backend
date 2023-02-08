@@ -1,10 +1,10 @@
-import { Schema, model, Query } from "mongoose";
+import { Schema, model } from 'mongoose';
 
-import { IHotel } from "../../types/hotel.types";
-import { IRoom } from "../../types/room.types";
-import { reviewSchema } from "../review/review";
-import RoomUnit from "../room-unit/room-unit";
-import { roomSchema } from "../room/room";
+import { IHotel } from '../../types/hotel.types';
+import { IRoom } from '../../types/room.types';
+import { reviewSchema } from '../review/review';
+import RoomUnit from '../room-unit/room-unit';
+import { roomSchema } from '../room/room';
 
 const hotelSchema = new Schema<IHotel>({
   name: {
@@ -42,12 +42,12 @@ const hotelSchema = new Schema<IHotel>({
   },
   category: {
     type: Schema.Types.ObjectId,
-    ref: "HotelCategory",
+    ref: 'HotelCategory',
     required: true,
   },
   city: {
     type: Schema.Types.ObjectId,
-    ref: "City",
+    ref: 'City',
     required: true,
   },
   photos: {
@@ -71,7 +71,7 @@ const hotelSchema = new Schema<IHotel>({
   reviews: [reviewSchema],
 });
 
-hotelSchema.pre("findOneAndUpdate", async function (this: any) {
+hotelSchema.pre('findOneAndUpdate', async function (this: any) {
   const rooms: IRoom[] | undefined = this._update.rooms;
 
   if (rooms) {
@@ -95,6 +95,6 @@ hotelSchema.pre("findOneAndUpdate", async function (this: any) {
   }
 });
 
-const Hotel = model<IHotel>("Hotel", hotelSchema);
+const Hotel = model<IHotel>('Hotel', hotelSchema);
 
 export default Hotel;

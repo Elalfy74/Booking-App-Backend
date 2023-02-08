@@ -1,8 +1,11 @@
-import { Request, Response, NextFunction } from "express";
-import createHttpError from "http-errors";
+import { Request, Response, NextFunction } from 'express';
+import createHttpError from 'http-errors';
+
+import { isAuth } from '.';
 
 export default async (req: Request, res: Response, next: NextFunction) => {
-  if (!req.isAdmin) throw createHttpError.Unauthorized("Access denied");
-
-  next();
+  isAuth(req, res, () => {
+    if (!req.isAdmin) return next(createHttpError.Unauthorized('Access denied'));
+    next();
+  });
 };

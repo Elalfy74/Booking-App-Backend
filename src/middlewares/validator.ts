@@ -1,6 +1,6 @@
-import { NextFunction, Request, Response } from "express";
-import createError from "http-errors";
-import { ObjectSchema } from "joi";
+import { NextFunction, Request, Response } from 'express';
+import createError from 'http-errors';
+import { ObjectSchema } from 'joi';
 
 export type ValidatorParams = {
   bodySchema?: ObjectSchema<any>;
@@ -16,17 +16,19 @@ export default (validatorParams: ValidatorParams) => {
     const query = req.query as any;
     const params = req.params;
 
+    // Validate Body
     if (bodySchema) {
       const { error } = bodySchema.validate(body);
       if (error) throw createError.BadRequest(error.details[0].message);
     }
 
+    // Validate Query
     if (querySchema) {
       // parse the query params
-      console.log("From Validator", query);
+      // console.log('From Validator', query);
       for (const q in query) {
         try {
-          if (typeof query[q] === "object") break;
+          if (typeof query[q] === 'object') break;
 
           query[q] = JSON.parse(query[q] as string);
         } catch (err) {
@@ -38,6 +40,7 @@ export default (validatorParams: ValidatorParams) => {
       if (error) throw createError.BadRequest(error.details[0].message);
     }
 
+    // Validate Params
     if (paramsSchema) {
       const { error } = paramsSchema.validate(params);
       if (error) throw createError.BadRequest(error.details[0].message);

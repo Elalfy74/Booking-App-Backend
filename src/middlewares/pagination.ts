@@ -1,6 +1,6 @@
-import { Request, Response, NextFunction } from "express";
-import { Model } from "mongoose";
-import { QueryFields } from "../types/types";
+import { Request, Response, NextFunction } from 'express';
+import { Model } from 'mongoose';
+import { QueryFields } from '../types/types';
 
 export default (Model: Model<any>) => {
   return async (req: Request, res: Response, next: NextFunction) => {
@@ -14,8 +14,8 @@ export default (Model: Model<any>) => {
 
     const count = await Model.count();
 
-    res.setHeader("Content-Range", count);
-    res.setHeader("Access-Control-Expose-Headers", "Content-Range");
+    res.setHeader('Content-Range', count);
+    res.setHeader('Access-Control-Expose-Headers', 'Content-Range');
 
     req.startIndex = startIndex;
     req.limit = limit;
