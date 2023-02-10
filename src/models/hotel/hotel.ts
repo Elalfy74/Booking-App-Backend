@@ -10,13 +10,12 @@ const hotelSchema = new Schema<IHotel>({
   name: {
     type: String,
     minlength: 2,
-    maxlength: 50,
+    // maxlength: 50,
     required: true,
   },
   desc: {
     type: String,
     minlength: 4,
-    maxlength: 200,
     required: true,
   },
   cheapestPrice: {
@@ -35,14 +34,14 @@ const hotelSchema = new Schema<IHotel>({
     maxlength: 200,
     required: true,
   },
-  distanceToDT: {
+  distanceToDTInKm: {
     type: Number,
     min: 1,
     required: true,
   },
   category: {
-    type: Schema.Types.ObjectId,
-    ref: 'HotelCategory',
+    type: String,
+    enum: ['Chain hotel', 'Motel', 'Resort'],
     required: true,
   },
   city: {
@@ -54,7 +53,11 @@ const hotelSchema = new Schema<IHotel>({
     type: [String],
     required: true,
   },
-  noOfStars: {
+  features: {
+    type: [String],
+    required: true,
+  },
+  stars: {
     type: Number,
     min: 1,
     max: 5,

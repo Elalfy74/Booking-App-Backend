@@ -1,13 +1,13 @@
 import { RequestHandler } from 'express';
 
-import { ENTITES, Utils } from '../utils/utils';
+import { ENTITIES, Utils } from '../utils/utils';
 
 import City from '../models/city/city';
 import { AddCityBody, updateCityBody } from '../types/city.types';
 
 const MAX_FEATURED_CITIES = 6;
 
-const CITY = new Utils(ENTITES.CITY);
+const CITY = new Utils(ENTITIES.CITY);
 
 // @desc    Retrive All cities
 // @route   GET /api/cities

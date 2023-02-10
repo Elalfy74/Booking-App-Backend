@@ -3,7 +3,7 @@ import mongoose, { ObjectId } from 'mongoose';
 import { MongoMemoryServer } from 'mongodb-memory-server';
 import City from '../../models/city/city';
 
-import app from '../../startup/create-server';
+import app from '../../app';
 import { AddCityBody } from '../../types/city.types';
 
 const testToken = process.env.TEST_TOKEN || '';

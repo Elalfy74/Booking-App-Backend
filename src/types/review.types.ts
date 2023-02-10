@@ -1,8 +1,8 @@
-import { Schema } from "mongoose";
+import { Schema } from 'mongoose';
 
 export interface IReview {
   rate: number;
-  author: Schema.Types.ObjectId;
+  user: Schema.Types.ObjectId;
   body: string;
   createdAt: Date;
   updatedAt: Date;
@@ -10,6 +10,6 @@ export interface IReview {
 
 export type AddReviewBody = {
   rate: number;
-  author: Schema.Types.ObjectId;
+  user: Schema.Types.ObjectId;
   body: string;
 };

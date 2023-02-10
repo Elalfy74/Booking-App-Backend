@@ -28,7 +28,7 @@ export const paramsSchema = Joi.object({
 });
 
 export class Utils {
-  constructor(private entity: ENTITES) {}
+  constructor(private entity: ENTITIES) {}
 
   NOT_FOUND() {
     logger.error(`${this.entity} Not Found`);
@@ -63,43 +63,7 @@ export class Utils {
   }
 }
 
-export const ERRORS = {
-  NOT_FOUND: (entity: ENTITES) => {
-    logger.error(`${entity} Not Found`);
-    return createHttpError.NotFound(`${entity} Not Found`);
-  },
-
-  DUPLICATION: (entity: ENTITES, attribute: string) => {
-    logger.error(`${entity} With Same ${attribute} Already Exist`);
-    return createHttpError.BadRequest(`${entity} With Same ${attribute} Already Exist`);
-  },
-
-  MAX: (entity: ENTITES) => {
-    logger.error(
-      `Featured ${entity} count are already at max, please unfeature one before adding new one`
-    );
-    return createHttpError.BadRequest(
-      `Featured ${entity} count are already at max, please unfeature one before adding new one`
-    );
-  },
-};
-
-export const MESSAGES = {
-  CREATED: (entity: ENTITES) => {
-    logger.info(`Successfully Created ${entity}`);
-    return `Successfully Created ${entity}`;
-  },
-  UPDATED: (entity: ENTITES) => {
-    logger.info(`Successfully Updated ${entity}`);
-    return `Successfully Updated ${entity}`;
-  },
-  DELETED: (entity: ENTITES) => {
-    logger.info(`Successfully DELETED ${entity}`);
-    return `Successfully DELETED ${entity}`;
-  },
-};
-
-export enum ENTITES {
+export enum ENTITIES {
   ROOM_CATEGORY = 'Room Category',
   HOTEL_CATEGORY = 'Hotel Category',
   ROOM_UNIT = 'Room Unit',
@@ -107,3 +71,39 @@ export enum ENTITES {
   CITY = 'City',
   COUNTRY = 'Country',
 }
+
+// export const ERRORS = {
+//   NOT_FOUND: (entity: ENTITES) => {
+//     logger.error(`${entity} Not Found`);
+//     return createHttpError.NotFound(`${entity} Not Found`);
+//   },
+
+//   DUPLICATION: (entity: ENTITES, attribute: string) => {
+//     logger.error(`${entity} With Same ${attribute} Already Exist`);
+//     return createHttpError.BadRequest(`${entity} With Same ${attribute} Already Exist`);
+//   },
+
+//   MAX: (entity: ENTITES) => {
+//     logger.error(
+//       `Featured ${entity} count are already at max, please unfeature one before adding new one`
+//     );
+//     return createHttpError.BadRequest(
+//       `Featured ${entity} count are already at max, please unfeature one before adding new one`
+//     );
+//   },
+// };
+
+// export const MESSAGES = {
+//   CREATED: (entity: ENTITES) => {
+//     logger.info(`Successfully Created ${entity}`);
+//     return `Successfully Created ${entity}`;
+//   },
+//   UPDATED: (entity: ENTITES) => {
+//     logger.info(`Successfully Updated ${entity}`);
+//     return `Successfully Updated ${entity}`;
+//   },
+//   DELETED: (entity: ENTITES) => {
+//     logger.info(`Successfully DELETED ${entity}`);
+//     return `Successfully DELETED ${entity}`;
+//   },
+// };

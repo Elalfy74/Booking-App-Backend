@@ -1,23 +1,16 @@
 import { RequestHandler } from 'express';
-import mongoose, { ObjectId } from 'mongoose';
+import { ObjectId } from 'mongoose';
 
-import { ENTITES, ERRORS, MESSAGES } from '../utils/utils';
+import { ENTITIES, Utils } from '../utils/utils';
 import isValidRefrence from '../utils/isValidRefrence';
 
 import Hotel from '../models/hotel/hotel';
 import City from '../models/city/city';
 
 import { AddHotelBody, UpdateHotelBody } from '../types/hotel.types';
-import HotelCategory from '../models/hotel-category/hotel-category';
-import Room from '../models/room/room';
-import { IRoom } from '../types/room.types';
+// import HotelCategory from '../models/hotel-category/hotel-category';
 
-const HOTEL = {
-  NOT_FOUND: ERRORS.NOT_FOUND(ENTITES.HOTEL),
-  CREATED: MESSAGES.CREATED(ENTITES.HOTEL),
-  UPDATED: MESSAGES.UPDATED(ENTITES.HOTEL),
-  DELETED: MESSAGES.DELETED(ENTITES.HOTEL),
-};
+const HOTEL = new Utils(ENTITIES.HOTEL);
 
 // @desc    Retrive All Hotel
 // @route   GET /api/hotels
@@ -38,7 +31,7 @@ export const getHotel: RequestHandler = async (req, res, next) => {
 
   const hotel = await Hotel.findById(id);
 
-  if (!hotel) return next(HOTEL.NOT_FOUND);
+  if (!hotel) return next(HOTEL.NOT_FOUND());
 
   res.status(200).send(hotel);
 };
@@ -51,7 +44,7 @@ export const getRoomsOfHotel: RequestHandler = async (req, res, next) => {
 
   const rooms = await Hotel.findById(id).select({ rooms: 1 });
 
-  if (!rooms) return next(HOTEL.NOT_FOUND);
+  if (!rooms) return next(HOTEL.NOT_FOUND());
 
   res.setHeader('Content-Range', rooms.rooms.length);
   res.setHeader('Access-Control-Expose-Headers', 'Content-Range');
@@ -65,14 +58,14 @@ export const getRoomsOfHotel: RequestHandler = async (req, res, next) => {
 export const addHotel: RequestHandler = async (req, res, next) => {
   const body: AddHotelBody = req.body;
 
-  const hasError = await checkCityAndCategory(body);
-  if (hasError) return next(ERRORS.NOT_FOUND(hasError));
+  // const hasError = await checkCityAndCategory(body);
+  // if (hasError) return next(ERRORS.NOT_FOUND(hasError));
 
   const hotel = new Hotel(body);
   const savedHotel = await hotel.save();
 
   res.status(201).send({
-    message: HOTEL.CREATED,
+    message: HOTEL.CREATED(),
     hotel: savedHotel,
   });
 };
@@ -85,8 +78,8 @@ export const updateHotel: RequestHandler = async (req, res, next) => {
   const body: UpdateHotelBody = req.body;
 
   // Check for valid refrences
-  const hasError = await checkCityAndCategory(body);
-  if (hasError) return next(ERRORS.NOT_FOUND(hasError));
+  // const hasError = await checkCityAndCategory(body);
+  // if (hasError) return next(ERRORS.NOT_FOUND(hasError));
 
   // delete the empty id to let mongoose generate it
   if (body.rooms) {
@@ -96,8 +89,10 @@ export const updateHotel: RequestHandler = async (req, res, next) => {
   }
   const updatedHotel = await Hotel.findByIdAndUpdate(id, body, { new: true });
 
+  if (!updateHotel) return next(HOTEL.NOT_FOUND());
+
   res.status(200).send({
-    message: HOTEL.UPDATED,
+    message: HOTEL.UPDATED(),
     hotel: updatedHotel,
   });
 };
@@ -110,10 +105,10 @@ export const deleteHotel: RequestHandler = async (req, res, next) => {
 
   const hotel = await Hotel.findByIdAndRemove(id);
 
-  if (!hotel) return next(HOTEL.NOT_FOUND);
+  if (!hotel) return next(HOTEL.NOT_FOUND());
 
   res.status(200).send({
-    message: HOTEL.DELETED,
+    message: HOTEL.DELETED(),
     hotel,
   });
 };
@@ -123,7 +118,7 @@ export async function hotelHaveRoom(hotelId: ObjectId, roomId: ObjectId) {
 
   const hotel = await Hotel.findById(hotelId).select({ rooms: 1 });
 
-  if (!hotel) throw HOTEL.NOT_FOUND;
+  if (!hotel) throw HOTEL.NOT_FOUND();
 
   for (let i = 0; i < hotel.rooms.length; i++) {
     if (hotel.rooms[i]._id.toString() === roomId.toString()) {
@@ -135,23 +130,23 @@ export async function hotelHaveRoom(hotelId: ObjectId, roomId: ObjectId) {
   return isFound;
 }
 
-async function checkCityAndCategory(body: AddHotelBody | UpdateHotelBody) {
-  // Check Category isValid
-  if (body.category) {
-    const category = await isValidRefrence({
-      id: body.category,
-      Model: HotelCategory,
-    });
-    if (!category) return ENTITES.HOTEL_CATEGORY;
-  }
+// async function checkCityAndCategory(body: AddHotelBody | UpdateHotelBody) {
+//   // Check Category isValid
+//   if (body.category) {
+//     const category = await isValidRefrence({
+//       id: body.category,
+//       Model: HotelCategory,
+//     });
+//     if (!category) return ENTITES.HOTEL_CATEGORY;
+//   }
 
-  // Check City isValid
-  if (body.city) {
-    const city = await isValidRefrence({
-      id: body.city,
-      Model: City,
-    });
-    if (!city) return ENTITES.CITY;
-  }
-  return;
-}
+//   // Check City isValid
+//   if (body.city) {
+//     const city = await isValidRefrence({
+//       id: body.city,
+//       Model: City,
+//     });
+//     if (!city) return ENTITES.CITY;
+//   }
+//   return;
+// }

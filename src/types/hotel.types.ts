@@ -1,4 +1,5 @@
 import { ObjectId } from 'mongoose';
+import { HotelCategory } from './hotel-category.types';
 
 import { IReview } from './review.types';
 import { AddRoomBody, IRoom } from './room.types';
@@ -8,12 +9,12 @@ export interface IHotel {
   desc: string;
   cheapestPrice: number;
   address: string;
-  distanceToDT: number;
-  category: ObjectId;
+  distanceToDTInKm: number;
+  category: HotelCategory;
   city: ObjectId;
   photos: string[];
-  // features:string[];
-  noOfStars: number;
+  features: string[];
+  stars: number;
   rooms: IRoom[];
   isFeatured: boolean;
   reviews: IReview[];
@@ -23,12 +24,12 @@ export type AddHotelBody = {
   name: string;
   desc: string;
   address: string;
-  distanceToDT: number;
-  category: ObjectId;
+  distanceToDTInKm: number;
+  category: HotelCategory;
   city: ObjectId;
   photos: string[];
-  // features:string[];
-  noOfStars: number;
+  features: string[];
+  stars: number;
   rooms: IRoom[];
   isFeatured?: boolean;
 };

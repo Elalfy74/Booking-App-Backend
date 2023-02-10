@@ -1,36 +1,28 @@
-import { RequestHandler } from "express";
+import { RequestHandler } from 'express';
 
-import { ERRORS, ENTITES, MESSAGES } from "../utils/utils";
+import { ENTITIES, Utils } from '../utils/utils';
 
-import Country from "../models/country/country";
-import { AddCountryBody, updateCountryBody } from "../types/country.types";
+import Country from '../models/country/country';
+import { updateCountryBody } from '../types/country.types';
+import { CountryServices } from '../services/country.service';
 
-const MAX_FEATURED_COUTRIES = 6;
+const MAX_FEATURED_COUNTRIES = 6;
 
-const COUNTRY = {
-  NOT_FOUND: ERRORS.NOT_FOUND(ENTITES.COUNTRY),
-  DUPLICATION: ERRORS.DUPLICATION(ENTITES.COUNTRY, "Name"),
-  MAX: ERRORS.MAX(ENTITES.COUNTRY),
-  CREATED: MESSAGES.CREATED(ENTITES.COUNTRY),
-  UPDATED: MESSAGES.UPDATED(ENTITES.COUNTRY),
-  DELETED: MESSAGES.DELETED(ENTITES.COUNTRY),
-};
+const COUNTRY = new Utils(ENTITIES.COUNTRY);
+const countryServices = new CountryServices();
 
-// @desc    Retrive All Countries
+// @desc    Retrieve All Countries
 // @route   GET /api/countries
 // @access  PUBLIC
 export const getCountries: RequestHandler = async (req, res, next) => {
   const { findFilter, sort = { name: 1 }, startIndex = 0, limit = 10 } = req;
 
-  const countries = await Country.find(findFilter)
-    .limit(limit)
-    .skip(startIndex)
-    .sort(sort);
+  const countries = await Country.find(findFilter).limit(limit).skip(startIndex).sort(sort);
 
   res.status(200).send(countries);
 };
 
-// @desc    Retrive Single Country
+// @desc    Retrieve Single Country
 // @route   GET /api/countries/:id
 // @access  PUBLIC
 export const getCountry: RequestHandler = async (req, res, next) => {
@@ -38,7 +30,7 @@ export const getCountry: RequestHandler = async (req, res, next) => {
 
   const country = await Country.findById(id);
 
-  if (!country) return next(COUNTRY.NOT_FOUND);
+  if (!country) return next(COUNTRY.NOT_FOUND());
 
   res.status(200).send(country);
 };
@@ -47,28 +39,10 @@ export const getCountry: RequestHandler = async (req, res, next) => {
 // @route   POST /api/countries
 // @access  ADMIN
 export const addCountry: RequestHandler = async (req, res, next) => {
-  const body: AddCountryBody = req.body;
-
-  // CHECK for duplication name
-  const country = await Country.findOne({
-    name: body.name,
-  });
-  if (country) return next(COUNTRY.DUPLICATION);
-
-  // CHECK for the number of featured countries
-  if (body.isFeatured) {
-    const featuredCount = await Country.count({
-      isFeatured: true,
-    });
-    if (featuredCount === MAX_FEATURED_COUTRIES) return next(COUNTRY.MAX);
-  }
-
-  const newCountry = new Country(body);
-
-  const savedCountry = await newCountry.save();
+  const savedCountry = await countryServices.addCountry(req.body);
 
   res.status(201).send({
-    message: COUNTRY.CREATED,
+    message: COUNTRY.CREATED(),
     country: savedCountry,
   });
 };
@@ -84,23 +58,23 @@ export const updateCountry: RequestHandler = async (req, res, next) => {
   const country = await Country.findOne({
     name: body.name,
   });
-  if (country) return next(COUNTRY.DUPLICATION);
+  if (country) return next(COUNTRY.DUPLICATION('name'));
 
   if (body.isFeatured) {
     const featuredCount = await Country.count({
       isFeatured: true,
     });
 
-    if (featuredCount === MAX_FEATURED_COUTRIES) return next(COUNTRY.MAX);
+    if (featuredCount === MAX_FEATURED_COUNTRIES) return next(COUNTRY.MAX());
   }
 
   const updatedCountry = await Country.findByIdAndUpdate(id, body, {
     new: true,
   });
 
-  if (!updatedCountry) return next(COUNTRY.NOT_FOUND);
+  if (!updatedCountry) return next(COUNTRY.NOT_FOUND());
   res.status(200).send({
-    message: COUNTRY.UPDATED,
+    message: COUNTRY.UPDATED(),
     country: updatedCountry,
   });
 };
@@ -113,49 +87,10 @@ export const deleteCountry: RequestHandler = async (req, res, next) => {
 
   const country = await Country.findByIdAndRemove(id);
 
-  if (!country) return next(COUNTRY.NOT_FOUND);
+  if (!country) return next(COUNTRY.NOT_FOUND());
 
   res.status(200).send({
-    message: COUNTRY.DELETED,
+    message: COUNTRY.DELETED(),
     country,
   });
 };
-
-// async function fetchData() {
-//   try {
-//     const results = await Country.aggregate([
-//       {
-//         $lookup: {
-//           from: "cities",
-//           localField: "_id",
-//           foreignField: "country",
-//           as: "cities",
-//         },
-//       },
-//       {
-//         $unwind: {
-//           path: "$cities",
-//           preserveNullAndEmptyArrays: true,
-//         },
-//       },
-//       {
-//         $group: {
-//           _id: "$_id",
-//           name: { $first: "$name" },
-//           count: { $sum: 1 },
-//         },
-//       },
-//       {
-//         $project: {
-//           _id: 1,
-//           name: 1,
-//           count: 1,
-//         },
-//       },
-//     ]);
-
-//     console.log(results);
-//   } catch (error) {
-//     console.error(error);
-//   }
-// }

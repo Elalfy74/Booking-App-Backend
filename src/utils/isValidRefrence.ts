@@ -1,11 +1,11 @@
-import { Model, ObjectId } from "mongoose";
+import { Model, ObjectId } from 'mongoose';
 
-type IsValiRefrenceParams = {
-  id: ObjectId;
+type IsValidReferenceParams = {
+  id: ObjectId | string;
   Model: Model<any>;
 };
 
-export default async (params: IsValiRefrenceParams) => {
+export default async (params: IsValidReferenceParams) => {
   const { id, Model } = params;
 
   return await Model.findById(id);

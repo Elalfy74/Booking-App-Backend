@@ -1,34 +1,35 @@
-// import 'express-async-errors';
+import 'express-async-errors';
 
 import config from 'config';
 import dotenv from 'dotenv';
-// import express from 'express';
 import http from 'http';
 
 import connectToDB from './startup/db';
-// import middlewares from './startup/middlewares';
-// import routes from './startup/routes';
 import checkConfig from './startup/config';
 import { logger, testLoggerEnv } from './utils/logger';
-import app from './startup/create-server';
+import createServer from './startup/create-server';
 
-// dotenv.config();
+import { addHotels, addCountries, addCities } from './scripts/scipt';
+
+dotenv.config();
 testLoggerEnv();
 checkConfig();
 
 const port = config.get('port') || 8000;
 
-// const app = express();
-
-// middlewares(app);
-// routes(app);
+const app = createServer();
 
 const server = http.createServer(app);
 
-connectToDB().then(() => {
-  server.listen(port, () => {
-    logger.info(`Running at Port ${port}`);
+if (process.env.NODE_ENV !== 'test') {
+  connectToDB().then(() => {
+    server.listen(port, () => {
+      logger.info(`Running at Port ${port}`);
+      // addHotels();
+      // addCities();
+      // addCountries();
+    });
   });
-});
+}
 
 export default app;

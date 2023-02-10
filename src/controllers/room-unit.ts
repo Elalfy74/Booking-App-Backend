@@ -1,21 +1,13 @@
-import { RequestHandler } from "express";
-import _ from "lodash";
+import { RequestHandler } from 'express';
 
-import { ERRORS, ENTITES, MESSAGES } from "../utils/utils";
+import { ENTITIES, Utils } from '../utils/utils';
 
-import RoomUnit from "../models/room-unit/room-unit";
-import { AddRoomUnitBody, UpdateRoomUnitBody } from "../types/room-unit.types";
-import { hotelHaveRoom } from "./hotel";
-import createHttpError from "http-errors";
+import RoomUnit from '../models/room-unit/room-unit';
+import { AddRoomUnitBody, UpdateRoomUnitBody } from '../types/room-unit.types';
+import { hotelHaveRoom } from './hotel';
+import createHttpError from 'http-errors';
 
-const ROOM_UNIT = {
-  NOT_FOUND: ERRORS.NOT_FOUND(ENTITES.ROOM_UNIT),
-  WRONG_ROOM: createHttpError.BadRequest("Wrong Room Id"),
-  DUPLICATION: ERRORS.DUPLICATION(ENTITES.ROOM_UNIT, "Number Related to this Room"),
-  CREATED: MESSAGES.CREATED(ENTITES.ROOM_UNIT),
-  UPDATED: MESSAGES.UPDATED(ENTITES.ROOM_UNIT),
-  DELETED: MESSAGES.DELETED(ENTITES.ROOM_UNIT),
-};
+const ROOM_UNIT = new Utils(ENTITIES.ROOM_UNIT);
 
 // @desc    Retrive All Room Units
 // @route   GET /api/room-units
@@ -36,7 +28,7 @@ export const getRoomUnit: RequestHandler = async (req, res, next) => {
 
   const roomUnit = await RoomUnit.findById(id);
 
-  if (!roomUnit) return next(ROOM_UNIT.NOT_FOUND);
+  if (!roomUnit) return next(ROOM_UNIT.NOT_FOUND());
 
   res.status(200).send(roomUnit);
 };
@@ -52,18 +44,19 @@ export const addRoomUnit: RequestHandler = async (req, res, next) => {
     number: body.number,
     room: body.room,
   });
-  if (roomUnit) return next(ROOM_UNIT.DUPLICATION);
+
+  if (roomUnit) return next(ROOM_UNIT.DUPLICATION('Number Related to this Room'));
 
   // Check if the hotel contains the room
   const isHotelHaveRoom = await hotelHaveRoom(body.hotel, body.room);
-  if (!isHotelHaveRoom) return next(ROOM_UNIT.WRONG_ROOM);
+  if (!isHotelHaveRoom) return next(createHttpError.BadRequest('Wrong Room Id'));
 
   const newRoomUnit = new RoomUnit(body);
 
   const savedRoomUnit = await newRoomUnit.save();
 
   res.status(201).send({
-    message: ROOM_UNIT.CREATED,
+    message: ROOM_UNIT.CREATED(),
     roomUnit: savedRoomUnit,
   });
 };
@@ -79,7 +72,7 @@ export const updateRoomUnit: RequestHandler = async (req, res, next) => {
 
   const oldRoomUnit = await RoomUnit.findById(id);
 
-  if (!oldRoomUnit) return next(ROOM_UNIT.NOT_FOUND);
+  if (!oldRoomUnit) return next(ROOM_UNIT.NOT_FOUND());
 
   // CHANGE ROOM ONLY
   if (!body.number) {
@@ -104,7 +97,7 @@ export const updateRoomUnit: RequestHandler = async (req, res, next) => {
   }
 
   // Another Room Unit with Same Attributes Already Exist !
-  if (anotherRoomUnit) return next(ROOM_UNIT.DUPLICATION);
+  if (anotherRoomUnit) return next(ROOM_UNIT.DUPLICATION('Number Related to this Room'));
 
   oldRoomUnit.number = body.number || oldRoomUnit.number;
   oldRoomUnit.room = body.room || oldRoomUnit.room;
@@ -112,7 +105,7 @@ export const updateRoomUnit: RequestHandler = async (req, res, next) => {
   const updatedRoomUnit = await oldRoomUnit.save();
 
   res.status(200).send({
-    message: ROOM_UNIT.UPDATED,
+    message: ROOM_UNIT.UPDATED(),
     updatedRoomUnit,
   });
 };
@@ -125,10 +118,10 @@ export const deleteRoomUnit: RequestHandler = async (req, res, next) => {
 
   const roomUnit = await RoomUnit.findByIdAndRemove(id);
 
-  if (!roomUnit) return next(ROOM_UNIT.NOT_FOUND);
+  if (!roomUnit) return next(ROOM_UNIT.NOT_FOUND());
 
   res.status(200).send({
-    message: ROOM_UNIT.DELETED,
+    message: ROOM_UNIT.DELETED(),
     roomUnit,
   });
 };

@@ -35,7 +35,6 @@ const userSchema = new Schema<IUser, UserModel, IUserMethods>(
       select: false,
     },
     avatar: String,
-    phone: { type: Number, unique: true },
     isAdmin: { type: Boolean, default: false },
   },
   { timestamps: true }
