@@ -1,16 +1,16 @@
 import { Schema, model } from 'mongoose';
+import { RoomUnit } from '..';
 
 import { IHotel } from '../../types/hotel.types';
 import { IRoom } from '../../types/room.types';
 import { reviewSchema } from '../review/review';
-import RoomUnit from '../room-unit/room-unit';
 import { roomSchema } from '../room/room';
 
 const hotelSchema = new Schema<IHotel>({
   name: {
     type: String,
     minlength: 2,
-    // maxlength: 50,
+    maxlength: 255,
     required: true,
   },
   desc: {
@@ -98,6 +98,4 @@ hotelSchema.pre('findOneAndUpdate', async function (this: any) {
   }
 });
 
-const Hotel = model<IHotel>('Hotel', hotelSchema);
-
-export default Hotel;
+export const Hotel = model<IHotel>('Hotel', hotelSchema);

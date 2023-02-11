@@ -1,6 +1,6 @@
-import { Schema, model } from "mongoose";
+import { Schema, model } from 'mongoose';
 
-import { ICountry } from "../../types/country.types";
+import { ICountry } from '../../types/country.types';
 
 const countrySchema = new Schema<ICountry>({
   name: {
@@ -20,6 +20,4 @@ const countrySchema = new Schema<ICountry>({
   },
 });
 
-const Country = model<ICountry>("Country", countrySchema);
-
-export default Country;
+export const Country = model<ICountry>('Country', countrySchema);

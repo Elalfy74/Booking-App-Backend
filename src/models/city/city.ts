@@ -1,6 +1,6 @@
-import { Schema, model } from "mongoose";
+import { Schema, model } from 'mongoose';
 
-import { ICity } from "../../types/city.types";
+import { ICity } from '../../types/city.types';
 
 const citySchema = new Schema<ICity>({
   name: {
@@ -10,7 +10,7 @@ const citySchema = new Schema<ICity>({
 
   country: {
     type: Schema.Types.ObjectId,
-    ref: "Country",
+    ref: 'Country',
     required: true,
   },
 
@@ -25,6 +25,4 @@ const citySchema = new Schema<ICity>({
   },
 });
 
-const City = model<ICity>("City", citySchema);
-
-export default City;
+export const City = model<ICity>('City', citySchema);

@@ -1,15 +1,14 @@
 import { RequestHandler } from 'express';
 
-import { ENTITIES, Utils } from '../utils/utils';
+import { ENTITIES, Utils } from '../utils';
+import { isMaxFeatured } from '../utils/is-max-featured';
 
-import Country from '../models/country/country';
-import { updateCountryBody } from '../types/country.types';
-import { CountryServices } from '../services/country.service';
+import { Country } from '../models';
+import { AddCountryBody, updateCountryBody } from '../types/country.types';
 
 const MAX_FEATURED_COUNTRIES = 6;
 
 const COUNTRY = new Utils(ENTITIES.COUNTRY);
-const countryServices = new CountryServices();
 
 // @desc    Retrieve All Countries
 // @route   GET /api/countries
@@ -25,7 +24,7 @@ export const getCountries: RequestHandler = async (req, res, next) => {
 // @desc    Retrieve Single Country
 // @route   GET /api/countries/:id
 // @access  PUBLIC
-export const getCountry: RequestHandler = async (req, res, next) => {
+export const getCountryById: RequestHandler = async (req, res, next) => {
   const { id } = req.params;
 
   const country = await Country.findById(id);
@@ -39,7 +38,13 @@ export const getCountry: RequestHandler = async (req, res, next) => {
 // @route   POST /api/countries
 // @access  ADMIN
 export const addCountry: RequestHandler = async (req, res, next) => {
-  const savedCountry = await countryServices.addCountry(req.body);
+  const body: AddCountryBody = req.body;
+
+  await checkDuplicationAndFeatured(body.name, body.isFeatured);
+
+  const country = new Country(body);
+
+  const savedCountry = await country.save();
 
   res.status(201).send({
     message: COUNTRY.CREATED(),
@@ -50,29 +55,18 @@ export const addCountry: RequestHandler = async (req, res, next) => {
 // @desc    Update Country
 // @route   PATCH /api/countries/:id
 // @access  ADMIN
-export const updateCountry: RequestHandler = async (req, res, next) => {
+export const updateCountryById: RequestHandler = async (req, res, next) => {
   const { id } = req.params;
   const body: updateCountryBody = req.body;
 
-  // CHECK for duplication name
-  const country = await Country.findOne({
-    name: body.name,
-  });
-  if (country) return next(COUNTRY.DUPLICATION('name'));
-
-  if (body.isFeatured) {
-    const featuredCount = await Country.count({
-      isFeatured: true,
-    });
-
-    if (featuredCount === MAX_FEATURED_COUNTRIES) return next(COUNTRY.MAX());
-  }
+  await checkDuplicationAndFeatured(body.name, body.isFeatured);
 
   const updatedCountry = await Country.findByIdAndUpdate(id, body, {
     new: true,
   });
 
   if (!updatedCountry) return next(COUNTRY.NOT_FOUND());
+
   res.status(200).send({
     message: COUNTRY.UPDATED(),
     country: updatedCountry,
@@ -82,7 +76,7 @@ export const updateCountry: RequestHandler = async (req, res, next) => {
 // @desc    Delete Country
 // @route   PUT /api/countries/:id
 // @access  ADMIN
-export const deleteCountry: RequestHandler = async (req, res, next) => {
+export const deleteCountryById: RequestHandler = async (req, res, next) => {
   const { id } = req.params;
 
   const country = await Country.findByIdAndRemove(id);
@@ -93,4 +87,22 @@ export const deleteCountry: RequestHandler = async (req, res, next) => {
     message: COUNTRY.DELETED(),
     country,
   });
+};
+
+// *********** Helpers ***********
+
+const checkCountryDuplication = async (name: string) => {
+  const country = await Country.findOne({ name });
+  if (country) throw COUNTRY.DUPLICATION('name');
+};
+
+const checkDuplicationAndFeatured = async (name?: string, isFeatured?: boolean) => {
+  if (name) {
+    await checkCountryDuplication(name);
+  }
+
+  if (isFeatured === true) {
+    const isMax = await isMaxFeatured(Country, MAX_FEATURED_COUNTRIES);
+    if (isMax) throw COUNTRY.MAX();
+  }
 };

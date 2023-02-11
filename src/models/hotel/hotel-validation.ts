@@ -1,6 +1,6 @@
-import Joi from "joi";
-import { IsValidId } from "../../utils/utils";
-import { addRoomSchema, updateRoomSchema } from "../room/room-validation";
+import Joi from 'joi';
+import { IsValidId } from '../../utils';
+import { addRoomSchema, updateRoomSchema } from '../room/room-validation';
 
 export const addHotelSchema = Joi.object({
   name: Joi.string().min(2).max(50).required(),

@@ -1,15 +1,17 @@
 import { RequestHandler } from 'express';
 
-import { ENTITIES, Utils } from '../utils/utils';
+import { ENTITIES, invalidInput, Utils } from '../utils';
+import { isMaxFeatured } from '../utils/is-max-featured';
+import { isValidReference } from '../utils/is-valid-reference';
 
-import City from '../models/city/city';
+import { City, Country } from '../models';
 import { AddCityBody, updateCityBody } from '../types/city.types';
 
 const MAX_FEATURED_CITIES = 6;
 
 const CITY = new Utils(ENTITIES.CITY);
 
-// @desc    Retrive All cities
+// @desc    Retrieve All cities
 // @route   GET /api/cities
 // @access  PUBLIC
 export const getCities: RequestHandler = async (req, res, next) => {
@@ -27,10 +29,10 @@ export const getCities: RequestHandler = async (req, res, next) => {
   res.status(200).send(cities);
 };
 
-// @desc    Retrive Single City
+// @desc    Retrieve Single City
 // @route   GET /api/cities/:id
 // @access  PUBLIC
-export const getCity: RequestHandler = async (req, res, next) => {
+export const getCityById: RequestHandler = async (req, res, next) => {
   const { id } = req.params;
 
   const city = await City.findById(id);
@@ -46,13 +48,7 @@ export const getCity: RequestHandler = async (req, res, next) => {
 export const addCity: RequestHandler = async (req, res, next) => {
   const body: AddCityBody = req.body;
 
-  if (body.isFeatured) {
-    const featuredCount = await City.count({
-      isFeatured: true,
-    });
-
-    if (featuredCount === MAX_FEATURED_CITIES) return next(CITY.MAX());
-  }
+  await checkReferenceAndFeatured(body.country, body.isFeatured);
 
   const newCity = new City(body);
 
@@ -65,19 +61,13 @@ export const addCity: RequestHandler = async (req, res, next) => {
 };
 
 // @desc    Update City
-// @route   PATCH /api/citis/:id
+// @route   PATCH /api/cities/:id
 // @access  ADMIN
-export const updateCity: RequestHandler = async (req, res, next) => {
+export const updateCityById: RequestHandler = async (req, res, next) => {
   const { id } = req.params;
   const body: updateCityBody = req.body;
 
-  if (body.isFeatured) {
-    const featuredCount = await City.count({
-      isFeatured: true,
-    });
-
-    if (featuredCount === MAX_FEATURED_CITIES) return next(CITY.MAX());
-  }
+  await checkReferenceAndFeatured(body.country, body.isFeatured);
 
   const city = await City.findByIdAndUpdate(id, body, {
     new: true,
@@ -105,4 +95,21 @@ export const deleteCity: RequestHandler = async (req, res, next) => {
     message: CITY.DELETED(),
     city,
   });
+};
+
+// *********** Helpers ***********
+
+const checkReferenceAndFeatured = async (country?: string, isFeatured?: boolean) => {
+  if (country) {
+    const isValid = await isValidReference({
+      id: country,
+      Model: Country,
+    });
+    if (!isValid) throw invalidInput(ENTITIES.COUNTRY);
+  }
+
+  if (isFeatured) {
+    const isMax = await isMaxFeatured(City, MAX_FEATURED_CITIES);
+    if (isMax) throw CITY.MAX();
+  }
 };

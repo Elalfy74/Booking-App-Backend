@@ -1,7 +1,7 @@
-import { model, Schema } from "mongoose";
-import { IRoomUnit } from "../../types/room-unit.types";
+import { model, Schema } from 'mongoose';
+import { IRoomUnit } from '../../types/room-unit.types';
 
-export const roomUnitSchema = new Schema<IRoomUnit>(
+const roomUnitSchema = new Schema<IRoomUnit>(
   {
     hotel: {
       type: Schema.Types.ObjectId,
@@ -22,6 +22,4 @@ export const roomUnitSchema = new Schema<IRoomUnit>(
   }
 );
 
-const RoomUnit = model("RoomUnit", roomUnitSchema);
-
-export default RoomUnit;
+export const RoomUnit = model('RoomUnit', roomUnitSchema);

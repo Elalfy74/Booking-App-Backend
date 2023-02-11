@@ -10,7 +10,7 @@ export interface ICity {
 
 export type AddCityBody = {
   name: string;
-  country: ObjectId;
+  country: string;
   photos: string[];
   isFeatured?: boolean;
 };

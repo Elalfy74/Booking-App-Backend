@@ -1,6 +1,6 @@
 import Joi from 'joi';
 
-import { IsValidId } from '../../utils/utils';
+import { IsValidId } from '../../utils';
 
 export const addCitySchema = Joi.object({
   name: Joi.string().min(2).max(50).required(),

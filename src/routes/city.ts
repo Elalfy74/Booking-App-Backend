@@ -1,11 +1,10 @@
 import { Router } from 'express';
 
-import { featuredQuerySchema, paramsSchema } from '../utils/utils';
-import { isAdmin, validator, parseQuery } from '../middlewares';
+import { featuredQuerySchema, paramsSchema } from '../utils';
+import { isAdmin, validator, parseQuery } from '../middleware';
 
-import City from '../models/city/city';
-import * as cityController from '../controllers/city';
-import { addCitySchema, updateCitySchema } from '../models/city/city-validation';
+import { City, addCitySchema, updateCitySchema } from '../models';
+import { cityController } from '../controllers';
 
 const router = Router();
 
@@ -19,7 +18,7 @@ router.get(
 
 // GET
 // api/cities/:id
-router.get('/:id', validator({ paramsSchema }), cityController.getCity);
+router.get('/:id', validator({ paramsSchema }), cityController.getCityById);
 
 // POST
 // api/cities
@@ -30,7 +29,7 @@ router.post('/', [isAdmin, validator({ bodySchema: addCitySchema })], cityContro
 router.patch(
   '/:id',
   [isAdmin, validator({ bodySchema: updateCitySchema, paramsSchema })],
-  cityController.updateCity
+  cityController.updateCityById
 );
 
 // DELETE

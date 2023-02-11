@@ -1,11 +1,11 @@
 import express from 'express';
-import middlewares from './middlewares';
+import middleware from './middleware';
 import routes from './routes';
 
 function createServer() {
   const app = express();
 
-  middlewares(app);
+  middleware(app);
   routes(app);
 
   return app;

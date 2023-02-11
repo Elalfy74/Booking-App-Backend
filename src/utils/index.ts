@@ -27,6 +27,11 @@ export const paramsSchema = Joi.object({
   id: IsValidId.required(),
 });
 
+export const invalidInput = (entity: ENTITIES) => {
+  logger.error(`Invalid ${entity}`);
+  return createHttpError.Forbidden(`Invalid ${entity}`);
+};
+
 export class Utils {
   constructor(private entity: ENTITIES) {}
 

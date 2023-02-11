@@ -1,8 +1,7 @@
-import Joi from "joi";
+import Joi from 'joi';
 
 export const addRoomSchema = Joi.object({
   title: Joi.string().required(),
-  maxPeople: Joi.number().min(1).required(),
   beds: Joi.number().min(1).required(),
   desc: Joi.string().min(4).max(200).required(),
   currentPrice: Joi.number().min(1).required(),
@@ -10,9 +9,8 @@ export const addRoomSchema = Joi.object({
 });
 
 export const updateRoomSchema = Joi.object({
-  _id: Joi.string().allow(""),
+  _id: Joi.string().allow(''),
   title: Joi.string(),
-  maxPeople: Joi.number().min(1),
   beds: Joi.number().min(1),
   desc: Joi.string().min(4).max(200),
   currentPrice: Joi.number().min(1),

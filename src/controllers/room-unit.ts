@@ -1,15 +1,15 @@
 import { RequestHandler } from 'express';
-
-import { ENTITIES, Utils } from '../utils/utils';
-
-import RoomUnit from '../models/room-unit/room-unit';
-import { AddRoomUnitBody, UpdateRoomUnitBody } from '../types/room-unit.types';
-import { hotelHaveRoom } from './hotel';
+import { ObjectId } from 'mongoose';
 import createHttpError from 'http-errors';
+
+import { ENTITIES, invalidInput, Utils } from '../utils';
+
+import { Hotel, RoomUnit } from '../models';
+import { AddRoomUnitBody, UpdateRoomUnitBody } from '../types/room-unit.types';
 
 const ROOM_UNIT = new Utils(ENTITIES.ROOM_UNIT);
 
-// @desc    Retrive All Room Units
+// @desc    Retrieve All Room Units
 // @route   GET /api/room-units
 // @access  ADMIN
 export const getRoomUnits: RequestHandler = async (req, res, next) => {
@@ -20,10 +20,10 @@ export const getRoomUnits: RequestHandler = async (req, res, next) => {
   res.status(200).send(roomUnits);
 };
 
-// @desc    Retrive Single Room Unit
+// @desc    Retrieve Single Room Unit
 // @route   GET /api/room-units/:id
 // @access  PUBLIC
-export const getRoomUnit: RequestHandler = async (req, res, next) => {
+export const getRoomUnitById: RequestHandler = async (req, res, next) => {
   const { id } = req.params;
 
   const roomUnit = await RoomUnit.findById(id);
@@ -39,7 +39,7 @@ export const getRoomUnit: RequestHandler = async (req, res, next) => {
 export const addRoomUnit: RequestHandler = async (req, res, next) => {
   const body: AddRoomUnitBody = req.body;
 
-  // Check another related Room with same number
+  // Check another related Room with same number related to that room
   const roomUnit = await RoomUnit.findOne({
     number: body.number,
     room: body.room,
@@ -49,7 +49,7 @@ export const addRoomUnit: RequestHandler = async (req, res, next) => {
 
   // Check if the hotel contains the room
   const isHotelHaveRoom = await hotelHaveRoom(body.hotel, body.room);
-  if (!isHotelHaveRoom) return next(createHttpError.BadRequest('Wrong Room Id'));
+  if (!isHotelHaveRoom) return next(createHttpError.Forbidden('Wrong Room Id'));
 
   const newRoomUnit = new RoomUnit(body);
 
@@ -70,8 +70,8 @@ export const updateRoomUnit: RequestHandler = async (req, res, next) => {
 
   let anotherRoomUnit;
 
+  // CHECK is room unit exist
   const oldRoomUnit = await RoomUnit.findById(id);
-
   if (!oldRoomUnit) return next(ROOM_UNIT.NOT_FOUND());
 
   // CHANGE ROOM ONLY
@@ -100,7 +100,11 @@ export const updateRoomUnit: RequestHandler = async (req, res, next) => {
   if (anotherRoomUnit) return next(ROOM_UNIT.DUPLICATION('Number Related to this Room'));
 
   oldRoomUnit.number = body.number || oldRoomUnit.number;
-  oldRoomUnit.room = body.room || oldRoomUnit.room;
+  if (body.room) {
+    oldRoomUnit.room = body.room as unknown as ObjectId;
+  }
+
+  console.log(oldRoomUnit.room);
 
   const updatedRoomUnit = await oldRoomUnit.save();
 
@@ -125,3 +129,22 @@ export const deleteRoomUnit: RequestHandler = async (req, res, next) => {
     roomUnit,
   });
 };
+
+// *********** Helpers ***********
+
+export async function hotelHaveRoom(hotelId: string, roomId: string) {
+  let isFound = false;
+
+  const hotel = await Hotel.findById(hotelId).select({ rooms: 1 });
+
+  if (!hotel) throw invalidInput(ENTITIES.HOTEL);
+
+  for (let i = 0; i < hotel.rooms.length; i++) {
+    if (hotel.rooms[i]._id === roomId) {
+      isFound = true;
+      break;
+    }
+  }
+
+  return isFound;
+}

@@ -5,8 +5,8 @@ type IsValidReferenceParams = {
   Model: Model<any>;
 };
 
-export default async (params: IsValidReferenceParams) => {
+export const isValidReference = (params: IsValidReferenceParams) => {
   const { id, Model } = params;
 
-  return await Model.findById(id);
+  return Model.findById(id);
 };

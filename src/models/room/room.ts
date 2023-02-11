@@ -1,4 +1,4 @@
-import { model, Schema } from 'mongoose';
+import { Schema } from 'mongoose';
 import { IRoom } from '../../types/room.types';
 
 export const roomSchema = new Schema<IRoom>({
@@ -20,7 +20,3 @@ export const roomSchema = new Schema<IRoom>({
     required: true,
   },
 });
-
-const Room = model('Room', roomSchema);
-
-export default Room;
