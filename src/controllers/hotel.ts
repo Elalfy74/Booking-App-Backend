@@ -1,5 +1,4 @@
 import { RequestHandler } from 'express';
-import { ObjectId } from 'mongoose';
 
 import { ENTITIES, invalidInput, Utils } from '../utils';
 import { isValidReference } from '../utils/is-valid-reference';
@@ -14,8 +13,15 @@ const HOTEL = new Utils(ENTITIES.HOTEL);
 // @access  PUBLIC
 export const getHotels: RequestHandler = async (req, res, next) => {
   const { findFilter, sort = { name: 1 }, startIndex = 0, limit = 10 } = req;
+  const { withCity } = req.query;
 
-  const hotels = await Hotel.find(findFilter).limit(limit).skip(startIndex).sort(sort);
+  const city = withCity && typeof withCity === 'string' ? 'city' : '';
+
+  const hotels = await Hotel.find(findFilter)
+    .populate(city, 'name')
+    .limit(limit)
+    .skip(startIndex)
+    .sort(sort);
 
   res.status(200).send(hotels);
 };

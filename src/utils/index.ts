@@ -14,6 +14,7 @@ export const querySchema = Joi.object().keys({
     .items(Joi.string().required(), Joi.string().valid('ASC', 'DESC').required())
     .length(2),
   withCountry: Joi.boolean(),
+  withCity: Joi.boolean(),
 });
 
 export const featuredQuerySchema = querySchema.keys({

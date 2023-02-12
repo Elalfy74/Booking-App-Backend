@@ -3,11 +3,12 @@ export type QueryFields = {
     id?: string[];
   };
   range?: [number, number];
-  sort?: [string, "ASC" | "DESC"];
+  sort?: [string, 'ASC' | 'DESC'];
   withCountry?: boolean;
+  withCity?: boolean;
 };
 
-export type QueryFieldsWithFeatured = Omit<QueryFields, "filter"> & {
+export type QueryFieldsWithFeatured = Omit<QueryFields, 'filter'> & {
   filter?: {
     id?: string[];
     isFeatured?: boolean;
