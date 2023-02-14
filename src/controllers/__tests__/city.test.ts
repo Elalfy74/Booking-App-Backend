@@ -1,13 +1,13 @@
 import request from 'supertest';
 import mongoose, { ObjectId } from 'mongoose';
 import { MongoMemoryServer } from 'mongodb-memory-server';
-import City from '../../models/city/city';
+import { City } from '../../models';
 
 import app from '../../app';
 import { AddCityBody } from '../../types/city.types';
 
 const testToken = process.env.TEST_TOKEN || '';
-const id = new mongoose.Types.ObjectId().toHexString() as unknown as ObjectId;
+const id = new mongoose.Types.ObjectId().toHexString() as unknown as string;
 
 const createCityBody: AddCityBody = {
   name: 'city_name',

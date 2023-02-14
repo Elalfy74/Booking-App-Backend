@@ -1,0 +1,7 @@
+{
+  "tokenKey": "ACCESS_TOKEN_KEY",
+  "refreshTokenKey": "REFRESH_TOKEN_KEY",
+  "db": "DB",
+  "frontEndUrl": "FRONT_END_URL",
+  "port": "PORT"
+}
