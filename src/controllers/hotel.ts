@@ -26,13 +26,41 @@ export const getHotels: RequestHandler = async (req, res, next) => {
   res.status(200).send(hotels);
 };
 
+// @desc    Retrieve Featured Hotels Ids
+// @route   GET /api/hotels/featured
+// @access  PUBLIC
+export const getFeaturedHotelsIds: RequestHandler = async (req, res, next) => {
+  const hotelsIds = await Hotel.find({
+    isFeatured: true,
+  }).select({
+    _id: 1,
+  });
+
+  res.status(200).send(hotelsIds);
+};
+
 // @desc    Retrieve Single Hotel
 // @route   GET /api/hotels/:id
 // @access  PUBLIC
 export const getHotelById: RequestHandler = async (req, res, next) => {
   const { id } = req.params;
+  const { withCity, withCountry } = req.query;
 
-  const hotel = await Hotel.findById(id);
+  const city = withCity ? 'city' : '';
+  const country = withCountry ? 'country' : '';
+
+  const hotel = await Hotel.findById(id).populate({
+    path: city,
+    select: {
+      name: true,
+    },
+    populate: {
+      path: country,
+      select: {
+        name: true,
+      },
+    },
+  });
 
   if (!hotel) return next(HOTEL.NOT_FOUND());
 
