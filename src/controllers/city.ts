@@ -18,7 +18,7 @@ export const getCities: RequestHandler = async (req, res, next) => {
   const { findFilter, sort = { name: 1 }, startIndex = 0, limit = 10 } = req;
   const { withCountry } = req.query;
 
-  const country = withCountry && typeof withCountry === 'string' ? 'country' : '';
+  const country = withCountry ? 'country' : '';
 
   const cities = await City.find(findFilter)
     .populate(country)

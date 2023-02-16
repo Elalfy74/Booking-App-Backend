@@ -9,23 +9,11 @@ const router = Router();
 
 // POST
 // api/auth/signup
-router.post('/signup', validator({ bodySchema: signupSchema }), authController.signup);
+router.post('/signup', validator({ bodySchema: signupSchema }), authController.signupCookies);
 
 // POST
 // api/auth/login
-router.post('/login', validator({ bodySchema: loginSchema }), authController.login);
-
-// POST
-// api/auth/signup-cookies
-router.post(
-  '/signup-cookies',
-  validator({ bodySchema: signupSchema }),
-  authController.signupCookies
-);
-
-// POST
-// api/auth/login-cookies
-router.post('/login-cookies', validator({ bodySchema: loginSchema }), authController.loginCookies);
+router.post('/login', validator({ bodySchema: loginSchema }), authController.loginCookies);
 
 // POST
 // api/auth/logout

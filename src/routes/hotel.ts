@@ -21,6 +21,10 @@ router.get(
 router.get('/rooms/:id', [validator({ paramsSchema })], hotelController.getRoomsOfHotel);
 
 // GET
+// api/hotel/featured
+router.get('/featured', hotelController.getFeaturedHotelsIds);
+
+// GET
 // api/hotel/:id
 router.get('/:id', validator({ paramsSchema }), hotelController.getHotelById);
 

@@ -1,4 +1,4 @@
-import { HydratedDocument, Model } from "mongoose";
+import { HydratedDocument, Model } from 'mongoose';
 
 export type LoginBody = {
   email: string;
@@ -25,7 +25,7 @@ export interface IUser {
 }
 
 export interface IUserMethods {
-  generateToken(): string;
+  generateAccessToken(): string;
   generateRefreshToken(): string;
   generateCookiesToken(): string;
 }

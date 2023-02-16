@@ -11,7 +11,7 @@ export const querySchema = Joi.object().keys({
 
   range: Joi.array().items(Joi.number()).length(2),
   sort: Joi.array()
-    .items(Joi.string().required(), Joi.string().valid('ASC', 'DESC').required())
+    .items(Joi.string().required(), Joi.string().valid('asc', 'desc').required())
     .length(2),
   withCountry: Joi.boolean(),
   withCity: Joi.boolean(),
